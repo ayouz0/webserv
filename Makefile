@@ -1,17 +1,34 @@
-NAME=ft_irc
-SRCS=srcs/main.cpp srcs/Server/Server.cpp srcs/Client/Client.cpp srcs/utils/tokenize.cpp
-OBJS=$(SRCS:.cpp=.o)
-CXX=c++
-CXXFLAGS=#-Wall -Wextra -Werror -std=c++98
-HEADERS=srcs/Server/Server.hpp srcs/Client/Client.hpp
+NAME        = ft_irc
+
+CXX         = c++
+CXXFLAGS    = -Wall -Wextra -Werror -std=c++98
+
+SRCS_DIR    = srcs
+
+SRCS        = srcs/main.cpp \
+              srcs/Client/Client.cpp \
+              srcs/Server/Server.cpp \
+              srcs/Server/Commands/Nick.cpp \
+              srcs/Server/Commands/Pass.cpp \
+              srcs/Server/Commands/User.cpp \
+              srcs/Server/Utils/closeClientConnection.cpp \
+              srcs/Server/Utils/generateErrorResponce.cpp \
+              srcs/Server/Utils/sendMessageToClient.cpp \
+              srcs/utils/tokenize.cpp
+
+OBJS        = $(SRCS:.cpp=.o)
 
 all: $(NAME)
-$(NAME): $(OBJS) $(HEADERS)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
-%.o: %.cpp $(HEADERS)
+
+$(NAME): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 clean:
 	rm -f $(OBJS)
+
 fclean: clean
 	rm -f $(NAME)
 

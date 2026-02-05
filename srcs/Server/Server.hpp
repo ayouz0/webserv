@@ -14,7 +14,7 @@
 # include <algorithm>
 #define MAX_CONNECTIONS SOMAXCONN
 /*
-    brief Server class to handle incoming client connections and manage communication
+    @brief Server class to handle incoming client connections and manage communication
 */
 
 class Server {

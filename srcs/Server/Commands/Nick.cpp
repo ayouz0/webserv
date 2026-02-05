@@ -15,6 +15,8 @@ bool    isValidNickname(const std::string &nickname){
 
 void    Server::handleNickCommand(const std::vector<std::string> &tokens, int clientSocket){
     
+
+    // if ()
     Client *client = this->Clients[clientSocket];
 
     if (tokens.size() < 2){
