@@ -3,7 +3,7 @@
 static std::string *getNexToken(const std::string &m, int &i)
 {
     bool break_space = true;
-    size_t len = m.length();
+    int len = m.length();
 
     while (i < len && std::isspace(m.at(i)))
         i++;

@@ -1,10 +1,10 @@
 #include "Client.hpp"
 
-Client::Client() : _socket(-1), _nickname(""), authenticated(false){
+Client::Client() : _socket(-1), _nickname(""){
 }
 Client::~Client(){
 }
 
-Client::Client (int fd, std::string const &nickname) : _socket(fd), _nickname(nickname), authenticated(false){
+Client::Client (int fd, std::string const &nickname) : _socket(fd), _nickname(nickname){
 }
 

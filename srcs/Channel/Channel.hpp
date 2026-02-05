@@ -27,7 +27,7 @@ class Channel
 
 
     bool    isModerator(const Client &c) const{
-        for (int i = 0; i < members.size(); i++)
+        for (size_t i = 0; i < members.size(); i++)
         {
             if (members[i].client.getNickname() == c.getNickname()) return members[i].moderator;
         }
@@ -35,7 +35,7 @@ class Channel
     }
 
 public:
-    Channel(const Client &creator, std::string name):  name(name), invite_only(false), password(""), topic("no topic is set yet"), topic_lock(false), locked(false)
+    Channel(const Client &creator, std::string name):  topic("no topic is set yet"), topic_lock(false), name(name),invite_only(false), password(""),locked(false)
     {
         this->id = ++counter;
         members.push_back(ChannelMember(creator, true));
@@ -45,11 +45,13 @@ public:
         if (invite_only) throw std::runtime_error("channel is invite only");
         if (locked && password != this->password) throw  std::runtime_error("incorrect password");
         members.push_back(ChannelMember(c, false));
+        return true; // !
     }
 
     bool    setTopic(const Client &c, std::string topic){
         if (topic_lock && !isModerator(c)) throw std::runtime_error("topic is locked you need to be a moderator to change it");
         this->topic = topic;
+        return true; //!
     }
 };
 

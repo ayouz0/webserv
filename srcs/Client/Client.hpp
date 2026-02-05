@@ -8,7 +8,6 @@ class Client{
         std::string _username;
         int         _socket;
         std::string _nickname;
-        bool authenticated;
 
         bool    _hasPassword;
         bool    _hasNickname;

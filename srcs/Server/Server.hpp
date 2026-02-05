@@ -11,6 +11,7 @@
 #include "../Client/Client.hpp"
 #include <unistd.h>
 # include "../utils/utils.hpp"
+#include "../Channel/Channel.hpp"
 # include <algorithm>
 #define MAX_CONNECTIONS SOMAXCONN
 /*
