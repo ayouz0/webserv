@@ -20,12 +20,25 @@
 class Server {
     private:
 
-        int                     serverSocket;
-        std::string             _ServerPassword;
-        struct sockaddr_in      serverAddr;
-        std::vector<pollfd>     clientSockets;
-        std::map<int, Client *> Clients;
-        std::string serverName;
+    int serverSocket;
+    std::string _ServerPassword;
+    struct sockaddr_in serverAddr;
+    std::vector<pollfd> clientSockets;
+    std::map<int, Client *> Clients;
+    std::vector<Channel> channels;
+    std::string serverName;
+
+
+    Client* getClientByNickname(std::string &name){
+        std::map<int, Client *>::iterator   it = Clients.begin();
+
+        while (it != Clients.end())
+        {
+            if (it->second->getNickname() == name) return it->second;
+            it++;
+        }
+        return NULL;
+    }        
 
     public: 
 
@@ -47,11 +60,18 @@ class Server {
         std::string generateErrorResponce(int numericCode, std::string targetNick, std::string errorParams, std::string reason);
 
     /*
+         @brief add clinet to the channel
+        @param SockerId - clinetSocker id
+        @param name - channel name
+        @note throws std::runtime_error
+    */
+   void    handleJoinChannel(int socketId, std::vector<std::string> channelData);
+
+    /*
         @brief routes the command to match the execution path for each request
         @param command the buffered string until \r\n, and the clientId making the request
         @note throws std::runtime_error
     */
-
     void router(const std::string &command, int clientSocket);
 };
 
