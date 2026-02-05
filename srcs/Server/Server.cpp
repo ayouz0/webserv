@@ -6,8 +6,6 @@
 
 Server::Server(std::string const &port, std::string const &password) : _ServerPassword(password), serverName("irc"){
 
-
-
     this->serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (this->serverSocket == -1){
         std::cerr << "Could not create socket" << std::endl;
@@ -136,130 +134,6 @@ void    Server::stop(){
     std::cout << "Server stopped." << std::endl;
 }
 
-
-void    Server::closeClientConnection(int clientSocket) throw() {
-    close(clientSocket);
-    for (size_t i = 0; i < this->clientSockets.size(); i++){
-        if (this->clientSockets[i].fd == clientSocket){
-            this->clientSockets.erase(this->clientSockets.begin() + i);
-            break;
-        }
-    }
-    delete this->Clients[clientSocket];
-    this->Clients.erase(clientSocket);
-}
-
-
-void Server::sendMessageToClient(int clientSocket, std::string msg) {
-    if ((msg.length() < 2) || (msg.substr(msg.length() - 2) != "\r\n")){
-        msg += "\r\n";
-    }
-
-    size_t totalSent = 0;
-    size_t length = msg.length();
-    const char *ptr = msg.c_str();
-
-    while (totalSent < length) {
-        ssize_t sent = send(clientSocket, ptr + totalSent, length - totalSent, 0);
-
-        if (sent == -1) { 
-            this->closeClientConnection(clientSocket);
-            return; 
-        }
-        totalSent += sent;
-    }
-}
-
-std::string Server::generateErrorResponce(int numericCode, std::string targetNick, std::string errorParams, std::string reason){
-    std::string serverName = this->serverName;
-    std::stringstream responce ;
-    responce <<  ":" << serverName << " " << numericCode << " " << targetNick << " " << errorParams << " :" << reason;
-
-    return responce.str();
-}
-
-void    Server::handlePassCommand(const std::vector<std::string> &tokens, int clientSocket){
-
-    Client *client = this->Clients[clientSocket];
-
-    if (client->isRegistered() == true){
-
-        std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(462, nickName, "PASS", "Already registered!");
-
-        this->sendMessageToClient(clientSocket, errorMsg);
-        return;
-    }
-
-    if (tokens.size() < 2){ 
-        std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(461, nickName, "PASS", "Not Enough Parameters");
-
-        this->sendMessageToClient(clientSocket, errorMsg);
-        return;
-    }
-
-    std::string password = tokens[1];
-    if (password != this->_ServerPassword){
-        std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(462, nickName, "PASS", "Password missmatch");
-
-        this->sendMessageToClient(clientSocket, errorMsg);
-        return;
-    }
-
-    client->setPassState(true);
-}
-
-bool    isValidNickname(const std::string &nickname){
-    if (nickname.empty() || nickname.length() > 9){
-        return false;
-    }
-    for (size_t i = 0; i < nickname.length(); i++){
-        char c = nickname[i];   // `|^_-{}[] and \'
-        if (!isalnum(c) && c != '-' && c != '_' && c != '[' && c != ']' && c != '\\' && c != '`' && c != '{' && c != '}'){
-            return false;
-        }
-    }
-    return true;
-}
-
-void    Server::handleNickCommand(const std::vector<std::string> &tokens, int clientSocket){
-    
-    Client *client = this->Clients[clientSocket];
-
-    if (tokens.size() < 2){
-        std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(431, nickName, "NICK:", "No nickname given");
-
-        this->sendMessageToClient(clientSocket, errorMsg);
-        return;
-    }
-
-    std::string nickname = tokens[1];
-    if (nickname.empty() || !isValidNickname(nickname)){
-        std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(432, nickName, nickname, "Erroneous nickname");
-
-        this->sendMessageToClient(clientSocket, errorMsg);
-        return;
-    }
-
-    
-    for (std::map<int, Client*>::iterator it = this->Clients.begin(); it != Clients.end();   it ++){
-        if (it->second->getNickname() == nickname){ // duplicate
-            std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-            std::string errorMsg = this->generateErrorResponce(436, nickName, "NICK", "Nickname already in use");
-            this->sendMessageToClient(clientSocket, errorMsg);
-            return;
-        }
-    }
-    client->setNickname(nickname);
-}
-
-void        handleUserCommand(const std::vector<std::string> &tokens, int clientSocket){
-    
-}
 
 void    Server::router(const std::string &command, int clientSocket){
 
