@@ -9,17 +9,38 @@ class Client{
         int         _socket;
         std::string _nickname;
 
+        std::string ipAdress; // aalahyan was here
+
+
         bool    _hasPassword;
         bool    _hasNickname;
         bool    _hasUsername;
         bool    _isRegistered;
 
+
+        void _init(){ // aalahyan was here
+            _hasPassword = false;
+            _hasNickname = false;
+            _hasUsername = false;
+            _isRegistered = false;
+        }
+
+
+
     public:
             Client();
             Client (int fd, std::string const &nickname);
+            Client(int fd, std::string nickname, std::string ipA){
+                _init();
+                this->_socket = fd;
+                this->_nickname = nickname;
+                this->ipAdress = ipA;
+            } // aalahyan was here: i didn't want to miss with orogonal construuctor but SHIIT
             ~Client();
             
-
+            std::string getIpAddress(){ // aalahyan was here
+                return ipAdress;
+            }
             void        appendToBuffer(std::string const &data){this->messageBuffer += data;};
             std::string &getBuffer() {return messageBuffer;}; 
 
