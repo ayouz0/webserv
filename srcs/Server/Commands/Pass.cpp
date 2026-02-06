@@ -4,7 +4,7 @@ void    Server::handlePassCommand(const std::vector<std::string> &tokens, int cl
 
     Client *client = this->Clients[clientSocket];
 
-    if (client->isRegistered() == true){
+    if ( client->isRegistered() == true ){
 
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(462, nickName, "PASS", "Already registered!");
@@ -13,7 +13,7 @@ void    Server::handlePassCommand(const std::vector<std::string> &tokens, int cl
         return;
     }
 
-    if (tokens.size() < 2){ 
+    if ( tokens.size() < 2 ){ 
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(461, nickName, "PASS", "Not Enough Parameters");
 
@@ -22,7 +22,7 @@ void    Server::handlePassCommand(const std::vector<std::string> &tokens, int cl
     }
 
     std::string password = tokens[1];
-    if (password != this->_ServerPassword){
+    if ( password != this->_ServerPassword ){
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(462, nickName, "PASS", "Password missmatch");
 

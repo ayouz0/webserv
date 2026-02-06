@@ -119,7 +119,6 @@ void Server::start(){
                 buffer[bytesRead] = '\0';
                 this->Clients[currentClientFd]->appendToBuffer(std::string(buffer));
                 std::string s(buffer);
-                std::cout << "|" << buffer << "|" << "    lenght:"<<  s.length() << std::endl;
                 this->router(this->Clients[currentClientFd]->getNextCommandFromBuffer(), currentClientFd);
             }
         }

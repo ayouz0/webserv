@@ -6,7 +6,7 @@ bool    isValidNickname(const std::string &nickname){
     }
     for (size_t i = 0; i < nickname.length(); i++){
         char c = nickname[i];   // `|^_-{}[] and \'
-        if (!isalnum(c) && c != '-' && c != '_' && c != '[' && c != ']' && c != '\\' && c != '`' && c != '{' && c != '}'){
+        if (!isalnum(c) && c != '-' && c != '_' && c != '[' && c != ']' && c != '\\' && c != '`' && c != '{' && c != '}' && c != '^' && c != '|'){
             return false;
         }
     }
@@ -14,21 +14,25 @@ bool    isValidNickname(const std::string &nickname){
 }
 
 void    Server::handleNickCommand(const std::vector<std::string> &tokens, int clientSocket){
-    
 
-    // if ()
     Client *client = this->Clients[clientSocket];
 
-    if (tokens.size() < 2){
+    if ( client->getPassState() == false ){
+        std::string nickName = "*";
+        std::string errorMsg = this->generateErrorResponce(431, nickName, "NICK", "Client not registered");
+        this->sendMessageToClient(clientSocket, errorMsg);
+    }
+
+    if ( tokens.size() < 2 ){
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(431, nickName, "NICK:", "No nickname given");
+        std::string errorMsg = this->generateErrorResponce(431, nickName, "NICK", "No nickname given");
 
         this->sendMessageToClient(clientSocket, errorMsg);
         return;
     }
 
     std::string nickname = tokens[1];
-    if (nickname.empty() || !isValidNickname(nickname)){
+    if ( nickname.empty() || !isValidNickname(nickname) ){
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(432, nickName, nickname, "Erroneous nickname");
 
@@ -36,8 +40,7 @@ void    Server::handleNickCommand(const std::vector<std::string> &tokens, int cl
         return;
     }
 
-    
-    for (std::map<int, Client*>::iterator it = this->Clients.begin(); it != Clients.end();   it ++){
+    for ( std::map<int, Client*>::iterator it = this->Clients.begin(); it != Clients.end(); it ++ ){
         if (it->second->getNickname() == nickname){ // duplicate
             std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
             std::string errorMsg = this->generateErrorResponce(436, nickName, "NICK", "Nickname already in use");
@@ -45,5 +48,12 @@ void    Server::handleNickCommand(const std::vector<std::string> &tokens, int cl
             return;
         }
     }
+
     client->setNickname(nickname);
+    client->setNickState(true);
+
+    if ( client->canRegister() == true ) {
+        client->setRegistered(true);
+    }
+
 }
