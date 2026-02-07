@@ -3,43 +3,52 @@
 
 void Server::handleJoinChannel(int socketId, std::vector<std::string> channelData)
 {
-        Client *client = this->Clients[socketId];
-        channelData.erase(channelData.begin());
+    Client *client = this->Clients[socketId];
+    channelData.erase(channelData.begin());
+
     try
     {
         if (channelData.empty())
-            sendMessageToClient(socketId, this->generateErrorResponce(461, client->getNickname(), "JOIN", "Not enough parameters"));
+            throw IrcException("Not enough parameters", 461); // ERR_NEEDMOREPARAMS
+
         Channel *ch = NULL;
         std::string name = channelData.at(0);
-        std::string pass = channelData.size() >= 2 ?  channelData.at(1) :  "";
-        for (int i = 0; i < channels.size(); i++)
+        std::string pass = (channelData.size() >= 2) ? channelData.at(1) : "";
+
+        for (size_t i = 0; i < channels.size(); i++)
         {
-            std::cout << "here" << std::endl;
             if (channels[i].getName() == name)
             {
                 ch = &(channels[i]);
-                break ;
+                break;
             }
         }
+
         if (ch)
         {
             ch->joinChannel(*client, pass);
         }
-        else{
-            Channel c(*client, name);
-            if (!pass.empty()){
-                c.setPassord(*client,  pass);
+        else
+        {
+            Channel newChannel(*client, name);
+            if (!pass.empty())
+            {
+                newChannel.setPassword(*client, pass);
             }
-            channels.push_back(c);
-            ch = &c;
+            channels.push_back(newChannel);
+            // After push_back, get the pointer to the element in the vector
+            ch = &channels.back();
         }
 
-        std::cout << "joined " << ch->getName() << std::endl;
- 
+        std::string response = ":" + client->getNickname() + "!" + client->getUsername() + 
+                      "@" + client->getIpAddress() + " JOIN " + ch->getName() + "\r\n";
+        
+        std::cout << "joined " << ch->getName() << std::endl; // to be removed
+        ch->broadcast(response);
+
     }
-    catch (std::exception &e)
+    catch (const IrcException &e)
     {
-        // std::string error = this->generateErrorResponce();
-        sendMessageToClient(socketId, this->generateErrorResponce(411, client->getNickname(), "JOIN", e.what()));
+        sendMessageToClient(socketId, this->generateErrorResponce(e.getCode(), client->getNickname(), "JOIN", e.what()));
     }
 }

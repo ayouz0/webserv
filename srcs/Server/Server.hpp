@@ -13,6 +13,8 @@
 # include "../utils/utils.hpp"
 #include "../Channel/Channel.hpp"
 # include <algorithm>
+#include <arpa/inet.h>
+
 #define MAX_CONNECTIONS SOMAXCONN
 /*
     @brief Server class to handle incoming client connections and manage communication

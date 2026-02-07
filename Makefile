@@ -11,10 +11,12 @@ SRCS        = srcs/main.cpp \
               srcs/Server/Commands/Nick.cpp \
               srcs/Server/Commands/Pass.cpp \
               srcs/Server/Commands/User.cpp \
+              srcs/Server/Commands/Join.cpp \
               srcs/Server/Utils/closeClientConnection.cpp \
               srcs/Server/Utils/generateErrorResponce.cpp \
               srcs/Server/Utils/sendMessageToClient.cpp \
-              srcs/utils/tokenize.cpp
+              srcs/utils/tokenize.cpp \
+              srcs/Channel/Channel.cpp
 
 OBJS        = $(SRCS:.cpp=.o)
 
