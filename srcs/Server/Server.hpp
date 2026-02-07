@@ -56,7 +56,7 @@ class Server {
 
         void        handlePassCommand(const std::vector<std::string> &tokens, int clientSocket);
         void        handleNickCommand(const std::vector<std::string> &tokens, int clientSocket);
-        // void        handleUserCommand(const std::vector<std::string> &tokens, int clientSocket);
+        void        handleUserCommand(const std::vector<std::string> &tokens, int clientSocket);
 
         std::string generateErrorResponce(int numericCode, std::string targetNick, std::string errorParams, std::string reason);
 
