@@ -6,7 +6,7 @@
 #include <exception>
 # include <iostream>
 #include "../IrcException/IrcException.hpp"
-
+# include <sys/socket.h>
 class Channel
 {
     struct ChannelMember

@@ -140,6 +140,7 @@ void Server::start()
                     continue;
                 }
                 buffer[bytesRead] = '\0';
+                std::cout << "Received data from client " << currentClientFd << ": " << buffer << std::endl; // to be removed
                 this->Clients[currentClientFd]->appendToBuffer(std::string(buffer));
                 std::string s(buffer);
                 this->router(this->Clients[currentClientFd]->getNextCommandFromBuffer(), currentClientFd);
@@ -161,12 +162,20 @@ void Server::stop()
 void Server::router(const std::string &command, int clientSocket)
 {
 
+    std::cout << "Received command: " << command << std::endl; // to be removed
     std::vector<std::string> tokens = Tokenize(command);
 
     if (tokens.empty())
         return;
 
+    for (size_t i = 0; i < tokens.size(); i++)
+    {
+        std::cout << "Token " << i << ": " << tokens[i] << std::endl;
+    }
+
     std::transform(tokens.at(0).begin(), tokens.at(0).end(), tokens.at(0).begin(), (int (*)(int))std::toupper);
+
+    Client* c = Clients[clientSocket];
 
     std::string cmd = tokens.at(0);
     if (cmd == "PASS")
@@ -176,6 +185,16 @@ void Server::router(const std::string &command, int clientSocket)
     else if (cmd == "NICK")
     {
         this->handleNickCommand(tokens, clientSocket);
+    }
+    else if (cmd == "JOIN")
+    {
+        if (!c->isRegistered())
+        {
+            sendMessageToClient(clientSocket, generateErrorResponce(451, "*", cmd, "You have not registered")); // ERR_NOTREGISTERED
+            return ;
+        }
+        std::cout << "handling join command" << std::endl; // to be removed
+        this->handleJoinChannel(clientSocket, tokens);
     }
     // else if (cmd == "USER"){
     //     this->handleUserCommand(tokens, clientSocket);
