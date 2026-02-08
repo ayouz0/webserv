@@ -76,6 +76,11 @@ class Server {
         @note throws std::runtime_error
     */
     void router(const std::string &command, int clientSocket);
+
+    /*
+        @brief debug function to print the clients and channels data, to be removed later
+    */
+    void debug() const;
 };
 
 #endif

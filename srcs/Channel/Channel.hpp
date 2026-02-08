@@ -64,8 +64,17 @@ public:
         return true;
     }
 
-    std::string getName(){
+    std::string getName() const {
         return name;
+    }
+
+    std::vector<Client *> getMembers() const {
+        std::vector<Client *> memberList;
+        for (size_t i = 0; i < members.size(); i++)
+        {
+            memberList.push_back(const_cast<Client *>(&members[i].client));
+        }
+        return memberList;
     }
 
     bool setPassword(const Client &c, std::string newPass) {
