@@ -21,6 +21,7 @@ void    Server::handleNickCommand(const std::vector<std::string> &tokens, int cl
         std::string nickName = "*";
         std::string errorMsg = this->generateErrorResponce(431, nickName, "NICK", "Client not registered");
         this->sendMessageToClient(clientSocket, errorMsg);
+        return;
     }
 
     if ( tokens.size() < 2 ){
@@ -32,7 +33,7 @@ void    Server::handleNickCommand(const std::vector<std::string> &tokens, int cl
     }
 
     std::string nickname = tokens[1];
-    if ( nickname.empty() || !isValidNickname(nickname) || isalnum(nickname[0])){
+    if ( nickname.empty() || !isValidNickname(nickname) || !isalnum(nickname[0])){
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(432, nickName, nickname, "Erroneous nickname");
 
