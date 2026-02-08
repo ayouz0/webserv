@@ -2,6 +2,7 @@
 
 #include <fcntl.h>
 #include <cstring>
+#include <iomanip>
 
 Server::Server(std::string const &port, std::string const &password) : _ServerPassword(password), serverName("irc")
 {
@@ -178,6 +179,9 @@ void Server::router(const std::string &command, int clientSocket)
     Client* client = Clients[clientSocket];
 
     std::string cmd = tokens.at(0);
+
+    if (cmd == "DEBUG") return debug(); // this is for testing purposes only, to be removed later
+
     if (cmd == "PASS")
     {
         this->handlePassCommand(tokens, clientSocket);
@@ -207,3 +211,68 @@ void Server::router(const std::string &command, int clientSocket)
     }
 }
 
+
+void    Server::debug() const{
+
+    const char *reset = "\033[0m";
+    const char *title = "\033[1;36m";
+    const char *header = "\033[1;34m";
+    const char *row = "\033[0;32m";
+    const char *muted = "\033[0;90m";
+
+    std::cout << title << "\n=== DEBUG STATE ===\n" << reset;
+
+    std::cout << header << "\nClients\n" << reset;
+    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n" << reset;
+    std::cout << muted << "| Socket   | Nickname             | Username             | IP               |\n" << reset;
+    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n" << reset;
+
+    if (Clients.empty())
+    {
+        std::cout << muted << "| (none)   |                      |                      |                  |\n" << reset;
+    }
+    else
+    {
+        for (std::map<int, Client *>::const_iterator it = Clients.begin(); it != Clients.end(); ++it)
+        {
+            std::cout << row << "| " << std::left << std::setw(8) << it->first
+                      << " | " << std::left << std::setw(20) << it->second->getNickname()
+                      << " | " << std::left << std::setw(20) << it->second->getUsername()
+                      << " | " << std::left << std::setw(16) << it->second->getIpAddress()
+                      << " |\n" << reset;
+        }
+    }
+    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n" << reset;
+
+    std::cout << header << "\nChannels\n" << reset;
+    std::cout << muted << "+----------------------+------------------------------------------+\n" << reset;
+    std::cout << muted << "| Name                 | Members                                  |\n" << reset;
+    std::cout << muted << "+----------------------+------------------------------------------+\n" << reset;
+
+    if (channels.empty())
+    {
+        std::cout << muted << "| (none)               |                                          |\n" << reset;
+    }
+    else
+    {
+        for (size_t i = 0; i < channels.size(); i++)
+        {
+            std::vector<Client *> members = channels[i].getMembers();
+            std::string memberList;
+            for (size_t j = 0; j < members.size(); j++)
+            {
+                if (j != 0)
+                    memberList += ", ";
+                memberList += members[j]->getNickname();
+            }
+            if (memberList.empty())
+                memberList = "(none)";
+
+            std::cout << row << "| " << std::left << std::setw(20) << channels[i].getName()
+                      << " | " << std::left << std::setw(40) << memberList
+                      << " |\n" << reset;
+        }
+    }
+
+    std::cout << muted << "+----------------------+------------------------------------------+\n" << reset;
+}
