@@ -62,6 +62,9 @@ class Server {
 
         std::string generateErrorResponce(int numericCode, std::string targetNick, std::string errorParams, std::string reason);
 
+
+        Channel *getChannelByName(std::string name);
+
     /*
          @brief add clinet to the channel
         @param SockerId - clinetSocker id
@@ -69,6 +72,13 @@ class Server {
         @note throws std::runtime_error
     */
    void    handleJoinChannel(int socketId, std::vector<std::string> channelData);
+
+
+   /*
+    @brief send private message to a client or a channel @param clientSocket - the sender's socket id @param tokens - the command tokens, where tokens[1] is the target and tokens[2] is the message @note throws std::runtime_error
+   */
+    void    handlePrivMsg(int clientSocket, std::vector<std::string> &tokens);
+
 
     /*
         @brief routes the command to match the execution path for each request
