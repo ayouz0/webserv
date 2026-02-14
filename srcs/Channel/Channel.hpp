@@ -38,7 +38,7 @@ class Channel
 
 public:
     Channel(const Client &creator, std::string name)
-        : topic("no topic is set yet"), topic_lock(false), name(name), 
+        : topic("No topic is set"), topic_lock(false), name(name), 
           invite_only(false), password(""), locked(false)
     {
         this->id = ++counter;
@@ -90,7 +90,7 @@ public:
     void    broadcast(const std::string &message, Client *exclude = NULL)
     {
         for (size_t i = 0; i < members.size(); i++){
-            if (exclude && exclude->getSocket() != members[i].client.getSocket())
+            if (!exclude || exclude->getSocket() != members[i].client.getSocket())
             {
                 send(members[i].client.getSocket(), message.c_str(), message.length(), 0);
             }

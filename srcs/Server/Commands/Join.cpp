@@ -43,7 +43,6 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
         std::string response = ":" + client->getNickname() + "!" + client->getUsername() + 
                       "@" + client->getIpAddress() + " JOIN " + ch->getName() + "\r\n";
         
-        std::cout << "joined " << ch->getName() << std::endl; // to be removed
         ch->broadcast(response);
 
     }

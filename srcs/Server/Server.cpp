@@ -144,7 +144,9 @@ void Server::start()
                 std::cout << "Received data from client " << currentClientFd << ": " << buffer << std::endl; // to be removed
                 this->Clients[currentClientFd]->appendToBuffer(std::string(buffer));
                 std::string s(buffer);
-                this->router(this->Clients[currentClientFd]->getNextCommandFromBuffer(), currentClientFd);
+                
+                    this->router(this->Clients[currentClientFd]->getNextCommandFromBuffer(), currentClientFd);
+                
             }
         }
     }
@@ -208,6 +210,16 @@ void Server::router(const std::string &command, int clientSocket)
     else if (cmd == "JOIN")
     {
         this->handleJoinChannel(clientSocket, tokens);
+    }
+    else if (cmd == "PRIVMSG"){
+        std::cerr << "Received PRIVMSG command" << std::endl; // to be removed
+        try{
+            handlePrivMsg(clientSocket, tokens);
+        }
+        catch(IrcException &e)
+        {
+            sendMessageToClient(clientSocket, generateErrorResponce(e.getCode(), client->getNickname(), tokens[1], e.what()));
+        }
     }
 }
 
