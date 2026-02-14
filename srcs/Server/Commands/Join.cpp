@@ -8,25 +8,20 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
 
     try
     {
-        if (channelData.empty())
-            throw IrcException("Not enough parameters", 461); // ERR_NEEDMOREPARAMS
+        if (channelData.empty()) throw IrcException("Not enough parameters", 461); // ERR_NEEDMOREPARAMS
 
-        Channel *ch = NULL;
-        std::string name = channelData.at(0);
-        std::string pass = (channelData.size() >= 2) ? channelData.at(1) : "";
+            std::string name = channelData.at(0);
+            
+            if (name.at(0) != '#') throw IrcException("Invalid Channel Mask", 476);
+            
+            std::string pass = (channelData.size() >= 2) ? channelData.at(1) : "";
+            
+            Channel *channel = getChannelByName(name);
+            
 
-        for (size_t i = 0; i < channels.size(); i++)
+        if (channel)
         {
-            if (channels[i].getName() == name)
-            {
-                ch = &(channels[i]);
-                break;
-            }
-        }
-
-        if (ch)
-        {
-            ch->joinChannel(*client, pass);
+            if (!channel->joinChannel(*client, pass)) return; // already a member, do nothing
         }
         else
         {
@@ -37,13 +32,13 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
             }
             channels.push_back(newChannel);
             // After push_back, get the pointer to the element in the vector
-            ch = &channels.back();
+            channel = &channels.back();
         }
 
         std::string response = ":" + client->getNickname() + "!" + client->getUsername() + 
-                      "@" + client->getIpAddress() + " JOIN " + ch->getName() + "\r\n";
+                      "@" + client->getIpAddress() + " JOIN " + channel->getName() + "\r\n";
         
-        ch->broadcast(response);
+        channel->broadcast(response);
 
     }
     catch (const IrcException &e)

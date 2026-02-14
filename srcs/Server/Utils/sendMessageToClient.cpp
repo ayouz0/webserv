@@ -14,7 +14,7 @@ void Server::sendMessageToClient(int clientSocket, std::string msg) {
 
         if (sent == -1) { 
             this->closeClientConnection(clientSocket);
-            return; 
+            return;
         }
         totalSent += sent;
     }
