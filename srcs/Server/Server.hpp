@@ -79,6 +79,13 @@ class Server {
    */
     void    handlePrivMsg(int clientSocket, std::vector<std::string> &tokens);
 
+    /*
+    @brief set or get the topic of a channel, if tokens size is 2 it's a get request, if it's 3 it's a set request
+    @param clientSocket - the sender's socket id
+    @param tokens - the command tokens, where tokens[1] is the channel name and tokens[2] is the topic (optional)
+    */
+        void    handleTopic(int clientSocket, std::vector<std::string> &tokens);
+
 
     /*
         @brief routes the command to match the execution path for each request

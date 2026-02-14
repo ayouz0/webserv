@@ -99,7 +99,7 @@ void Server::start()
             if (this->clientSockets[i].fd == this->serverSocket)
             {
 
-                struct sockaddr_in clientAddr; // added by aalahyan
+                struct sockaddr_in clientAddr;                // added by aalahyan
                 socklen_t clientAddrLen = sizeof(clientAddr); // added by aalahyan
 
                 int newClientSocket = accept(this->clientSockets[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
@@ -109,7 +109,7 @@ void Server::start()
                     continue;
                 }
 
-                std::string ipAddress = inet_ntoa(clientAddr.sin_addr); // you know who added it
+                std::string ipAddress = inet_ntoa(clientAddr.sin_addr);         // you know who added it
                 std::cout << "New connection from: " << ipAddress << std::endl; // you know who added it
 
                 pollfd newClientPoll;
@@ -120,7 +120,6 @@ void Server::start()
 
                 Client *newClient = new Client(newClientSocket, "", ipAddress);
                 this->Clients[newClientSocket] = newClient;
-
             }
             else
             {
@@ -143,10 +142,13 @@ void Server::start()
                 buffer[bytesRead] = '\0';
                 std::cout << "Received data from client " << currentClientFd << ": " << buffer << std::endl; // to be removed
                 this->Clients[currentClientFd]->appendToBuffer(std::string(buffer));
-                std::string s(buffer);
                 
-                    this->router(this->Clients[currentClientFd]->getNextCommandFromBuffer(), currentClientFd);
                 
+                std::string cmd;
+                while (!(cmd = this->Clients[currentClientFd]->getNextCommandFromBuffer()).empty())
+                {
+                    this->router(cmd, currentClientFd);
+                }
             }
         }
     }
@@ -178,11 +180,12 @@ void Server::router(const std::string &command, int clientSocket)
 
     std::transform(tokens.at(0).begin(), tokens.at(0).end(), tokens.at(0).begin(), (int (*)(int))std::toupper);
 
-    Client* client = Clients[clientSocket];
+    Client *client = Clients[clientSocket];
 
     std::string cmd = tokens.at(0);
 
-    if (cmd == "DEBUG") return debug(); // this is for testing purposes only, to be removed later
+    if (cmd == "DEBUG")
+        return debug(); // this is for testing purposes only, to be removed later
 
     if (cmd == "PASS")
     {
@@ -194,37 +197,44 @@ void Server::router(const std::string &command, int clientSocket)
         this->handleNickCommand(tokens, clientSocket);
         return;
     }
-    else if (cmd == "USER"){
+    else if (cmd == "USER")
+    {
         this->handleUserCommand(tokens, clientSocket);
         return;
     }
 
-    if (client->isRegistered() == false){
+    if (client->isRegistered() == false)
+    {
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(431, nickName, tokens[0], "You have not registered yet");
         this->sendMessageToClient(clientSocket, errorMsg);
         return;
     }
 
-
     else if (cmd == "JOIN")
     {
         this->handleJoinChannel(clientSocket, tokens);
     }
-    else if (cmd == "PRIVMSG"){
+    else if (cmd == "PRIVMSG")
+    {
         std::cerr << "Received PRIVMSG command" << std::endl; // to be removed
-        try{
+        try
+        {
             handlePrivMsg(clientSocket, tokens);
         }
-        catch(IrcException &e)
+        catch (IrcException &e)
         {
             sendMessageToClient(clientSocket, generateErrorResponce(e.getCode(), client->getNickname(), tokens[1], e.what()));
         }
     }
+    else if (cmd == "TOPIC")
+    {
+        handleTopic(clientSocket, tokens);
+    }
 }
 
-
-void    Server::debug() const{
+void Server::debug() const
+{
 
     const char *reset = "\033[0m";
     const char *title = "\033[1;36m";
@@ -232,16 +242,22 @@ void    Server::debug() const{
     const char *row = "\033[0;32m";
     const char *muted = "\033[0;90m";
 
-    std::cout << title << "\n=== DEBUG STATE ===\n" << reset;
+    std::cout << title << "\n=== DEBUG STATE ===\n"
+              << reset;
 
-    std::cout << header << "\nClients\n" << reset;
-    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n" << reset;
-    std::cout << muted << "| Socket   | Nickname             | Username             | IP               |\n" << reset;
-    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n" << reset;
+    std::cout << header << "\nClients\n"
+              << reset;
+    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n"
+              << reset;
+    std::cout << muted << "| Socket   | Nickname             | Username             | IP               |\n"
+              << reset;
+    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n"
+              << reset;
 
     if (Clients.empty())
     {
-        std::cout << muted << "| (none)   |                      |                      |                  |\n" << reset;
+        std::cout << muted << "| (none)   |                      |                      |                  |\n"
+                  << reset;
     }
     else
     {
@@ -251,19 +267,26 @@ void    Server::debug() const{
                       << " | " << std::left << std::setw(20) << it->second->getNickname()
                       << " | " << std::left << std::setw(20) << it->second->getUsername()
                       << " | " << std::left << std::setw(16) << it->second->getIpAddress()
-                      << " |\n" << reset;
+                      << " |\n"
+                      << reset;
         }
     }
-    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n" << reset;
+    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n"
+              << reset;
 
-    std::cout << header << "\nChannels\n" << reset;
-    std::cout << muted << "+----------------------+------------------------------------------+\n" << reset;
-    std::cout << muted << "| Name                 | Members                                  |\n" << reset;
-    std::cout << muted << "+----------------------+------------------------------------------+\n" << reset;
+    std::cout << header << "\nChannels\n"
+              << reset;
+    std::cout << muted << "+----------------------+------------------------------------------+\n"
+              << reset;
+    std::cout << muted << "| Name                 | Members                                  |\n"
+              << reset;
+    std::cout << muted << "+----------------------+------------------------------------------+\n"
+              << reset;
 
     if (channels.empty())
     {
-        std::cout << muted << "| (none)               |                                          |\n" << reset;
+        std::cout << muted << "| (none)               |                                          |\n"
+                  << reset;
     }
     else
     {
@@ -282,9 +305,11 @@ void    Server::debug() const{
 
             std::cout << row << "| " << std::left << std::setw(20) << channels[i].getName()
                       << " | " << std::left << std::setw(40) << memberList
-                      << " |\n" << reset;
+                      << " |\n"
+                      << reset;
         }
     }
 
-    std::cout << muted << "+----------------------+------------------------------------------+\n" << reset;
+    std::cout << muted << "+----------------------+------------------------------------------+\n"
+              << reset;
 }
