@@ -1,7 +1,7 @@
 NAME        = ft_irc
 
 CXX         = c++
-CXXFLAGS    = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS    = -Wall -Wextra -Werror -std=c++98 -fmax-errors=1
 
 SRCS_DIR    = srcs
 
@@ -19,6 +19,7 @@ SRCS        = srcs/main.cpp \
               srcs/Server/Utils/getChannelByName.cpp \
               srcs/Server/Utils/sendMessageToClient.cpp \
               srcs/utils/tokenize.cpp \
+              srcs/utils/splitter.cpp \
               srcs/Channel/Channel.cpp
 
 OBJS        = $(SRCS:.cpp=.o)
