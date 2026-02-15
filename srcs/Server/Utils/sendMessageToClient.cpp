@@ -5,17 +5,9 @@ void Server::sendMessageToClient(int clientSocket, std::string msg) {
         msg += "\r\n";
     }
 
-    size_t totalSent = 0;
-    size_t length = msg.length();
-    const char *ptr = msg.c_str();
+    std::map<int, Client *>::iterator it = this->Clients.find(clientSocket);
+    if (it == this->Clients.end())
+        return;
 
-    while (totalSent < length) {
-        ssize_t sent = send(clientSocket, ptr + totalSent, length - totalSent, 0);
-
-        if (sent == -1) { 
-            this->closeClientConnection(clientSocket);
-            return;
-        }
-        totalSent += sent;
-    }
+    it->second->appendToOutboundBuffer(msg);
 }

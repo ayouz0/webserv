@@ -4,7 +4,8 @@
 
 class Client{
     private:
-        std::string messageBuffer;
+        std::string inboundBuffer;
+        std::string outboundBuffer;
         std::string _username;
         int         _socket;
         std::string _nickname;
@@ -41,8 +42,12 @@ class Client{
             std::string getIpAddress(){ // aalahyan was here
                 return ipAdress;
             }
-            void        appendToBuffer(std::string const &data){this->messageBuffer += data;};
-            std::string &getBuffer() {return messageBuffer;}; 
+            void        appendToInboundBuffer(std::string const &data){this->inboundBuffer += data;};
+            std::string &getInboundBuffer() {return inboundBuffer;}; 
+
+            void        appendToOutboundBuffer(std::string const &data){this->outboundBuffer += data;};
+            bool        hasPendingOutput() const { return !outboundBuffer.empty(); }
+            std::string &getOutboundBuffer() { return outboundBuffer; }
 
             std::string getNickname() const {return _nickname;};
             void        setNickname(std::string const &nickname) {_nickname = nickname;};
@@ -53,15 +58,14 @@ class Client{
 
             int         getSocket() const { return _socket; };
             
-            std::string getNextCommandFromBuffer(){
-                size_t pos = messageBuffer.find("\r\n");
+            std::string getNextCommandFromInboundBuffer(){
+                size_t pos = inboundBuffer.find("\r\n");
                 if (pos != std::string::npos) {
-                    std::string command = messageBuffer.substr(0, pos);
-                    messageBuffer.erase(0, pos + 2); // +2 to remove the \r\n
+                    std::string command = inboundBuffer.substr(0, pos);
+                    inboundBuffer.erase(0, pos + 2); // +2 to remove the \r\n
                     return command;
                 }
-                std::string empty = "";
-                return empty;
+                return "";
             };
 
             void setPassState(bool state) { _hasPassword = state; }
