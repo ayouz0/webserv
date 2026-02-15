@@ -11,10 +11,10 @@ class Channel
 {
     struct ChannelMember
     {
-        const Client &client;
+        Client *client;
         bool moderator;
 
-        ChannelMember(const Client &c, bool mod) : client(c), moderator(mod) {}
+        ChannelMember(Client &c, bool mod) : client(&c), moderator(mod) {}
     };
 
     std::vector<ChannelMember> members;
@@ -31,14 +31,14 @@ class Channel
     {
         for (size_t i = 0; i < members.size(); i++)
         {
-            if (members[i].client.getNickname() == c.getNickname())
+            if (members[i].client->getNickname() == c.getNickname())
                 return members[i].moderator;
         }
         return false;
     }
 
 public:
-    Channel(const Client &creator, std::string name)
+    Channel(Client &creator, std::string name)
         : topic("No topic is set"), topic_lock(false), name(name),
           invite_only(false), password(""), locked(false)
     {
@@ -46,7 +46,7 @@ public:
         members.push_back(ChannelMember(creator, true));
     }
 
-    bool joinChannel(const Client &c, std::string password)
+    bool joinChannel(Client &c, std::string password)
     {
         if (invite_only)
             throw IrcException("Cannot join channel (+i)", 473); // ERR_INVITEONLYCHAN
@@ -83,7 +83,7 @@ public:
         std::vector<Client *> memberList;
         for (size_t i = 0; i < members.size(); i++)
         {
-            memberList.push_back(const_cast<Client *>(&members[i].client));
+            memberList.push_back(members[i].client);
         }
         return memberList;
     }
@@ -92,8 +92,8 @@ public:
     {
         for (size_t i = 0; i < members.size(); i++)
         {
-            if (members[i].client.getNickname() == nickname)
-                return const_cast<Client *>(&members[i].client);
+            if (members[i].client->getNickname() == nickname)
+                return members[i].client;
         }
         return NULL;
     }
@@ -116,18 +116,8 @@ public:
 
         for (size_t i = 0; i < members.size(); i++)
         {
-            int fd = members[i].client.getSocket();
-            if (!exclude || exclude->getSocket() != fd)
-            {
-                size_t totalSent = 0;
-                while (totalSent < finalMsg.length())
-                {
-                    ssize_t sent = send(fd, finalMsg.c_str() + totalSent, finalMsg.length() - totalSent, 0);
-                    if (sent == -1)
-                        break; // In a real project, you'd trigger client cleanup here
-                    totalSent += sent;
-                }
-            }
+            if (!exclude || exclude->getSocket() != members[i].client->getSocket())
+                members[i].client->appendToOutboundBuffer(finalMsg);
         }
     }
 
@@ -135,7 +125,7 @@ public:
     {
         for (size_t i = 0; i < members.size(); i++)
         {
-            if (members.at(i).client.getSocket() == socket)
+            if (members.at(i).client->getSocket() == socket)
                 return true;
         }
 

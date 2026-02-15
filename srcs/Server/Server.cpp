@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <cstring>
 #include <iomanip>
+#include <cerrno>
 
 Server::Server(std::string const &port, std::string const &password) : _ServerPassword(password), serverName("irc")
 {
@@ -78,76 +79,142 @@ void Server::start()
 
     while (true)
     {
-
-        int result = poll(this->clientSockets.data(), this->clientSockets.size(), -1); // blocked
-        if (result < 0)
+        // before askiing operating system what happened, we must tell it first what are we looking for
+        for (size_t i = 0; i < this->clientSockets.size(); i++)
         {
-            std::cerr << "Poll error" << std::endl;
+            if (this->clientSockets[i].fd == this->serverSocket)
+            {
+                this->clientSockets[i].events = POLLIN;
+                continue; // for server we only cae about incoming connections
+            }
+
+            std::map<int, Client *>::iterator it = this->Clients.find(this->clientSockets[i].fd);
+            Client *client = (it != this->Clients.end()) ? it->second : NULL;
+            short events = POLLIN;
+            if (client && client->hasPendingOutput())
+                events |= POLLOUT;
+            // for each clinet we care about incoming data(POLLIN), but if there is data that needed to be sent we also add POLLOUT
+            this->clientSockets[i].events = events;
+        }
+
+        //the OS will nlock here untill something of those events we wanted to happen occur
+        int result = poll(this->clientSockets.data(), this->clientSockets.size(), -1);
+        if (result <= 0)
+        {
+            if (result < 0)
+                std::cerr << "Poll error" << std::endl;
             continue;
         }
 
         for (size_t i = 0; i < this->clientSockets.size(); i++)
         {
-            if (result == 0)
+            short revents = this->clientSockets[i].revents;
+            int currentFd = this->clientSockets[i].fd;
+
+            if (currentFd == this->serverSocket && (revents & POLLIN))
             {
-                continue;
-            }
-            if ((this->clientSockets[i].revents & POLLIN) != 1)
-            {
-                continue;
-            }
-            if (this->clientSockets[i].fd == this->serverSocket)
-            {
+                // if the server socker recieved a request
+                // if (revents & POLLIN)
+                // {
+                    struct sockaddr_in clientAddr;                // added by aalahyan
+                    socklen_t clientAddrLen = sizeof(clientAddr); // added by aalahyan
 
-                struct sockaddr_in clientAddr;                // added by aalahyan
-                socklen_t clientAddrLen = sizeof(clientAddr); // added by aalahyan
+                    int newClientSocket = accept(this->clientSockets[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
+                    if (newClientSocket < 0)
+                    {
+                        std::cerr << "Accept failed" << std::endl;
+                        continue;
+                    }
 
-                int newClientSocket = accept(this->clientSockets[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
-                if (newClientSocket < 0)
-                {
-                    std::cerr << "Accept failed" << std::endl;
-                    continue;
-                }
+                    int nbResult = fcntl(newClientSocket, F_SETFL, O_NONBLOCK);
+                    if (nbResult == -1)
+                    {
+                        close(newClientSocket);
+                        std::cerr << "Could not set client socket to non-blocking" << std::endl;
+                        continue;
+                    }
 
-                std::string ipAddress = inet_ntoa(clientAddr.sin_addr);         // you know who added it
-                std::cout << "New connection from: " << ipAddress << std::endl; // you know who added it
+                    std::string ipAddress = inet_ntoa(clientAddr.sin_addr);         // you know who added it
+                    std::cout << "New connection from: " << ipAddress << std::endl; // you know who added it
 
-                pollfd newClientPoll;
-                newClientPoll.fd = newClientSocket;
-                newClientPoll.events = POLLIN;
-                newClientPoll.revents = 0;
-                this->clientSockets.push_back(newClientPoll);
+                    pollfd newClientPoll;
+                    newClientPoll.fd = newClientSocket;
+                    newClientPoll.events = POLLIN;
+                    newClientPoll.revents = 0;
+                    this->clientSockets.push_back(newClientPoll);
 
-                Client *newClient = new Client(newClientSocket, "", ipAddress);
-                this->Clients[newClientSocket] = newClient;
+                    Client *newClient = new Client(newClientSocket, "", ipAddress);
+                    this->Clients[newClientSocket] = newClient;
+                // }
             }
             else
             {
-
-                int currentClientFd = this->clientSockets[i].fd;
-                char buffer[1024];
-                ssize_t bytesRead = recv(currentClientFd, buffer, sizeof(buffer) - 1, 0);
-                if (bytesRead < 0)
+                if (revents & (POLLERR | POLLHUP | POLLNVAL)) //if there any poll error of clinet disconnection or invalid request
                 {
-                    std::cerr << "Receive failed" << std::endl;
-                    continue;
-                }
-                else if (bytesRead == 0)
-                {
-                    close(currentClientFd);
-                    this->clientSockets.erase(this->clientSockets.begin() + i);
+                    this->closeClientConnection(currentFd);
                     i--;
                     continue;
                 }
-                buffer[bytesRead] = '\0';
-                std::cout << "Received data from client " << currentClientFd << ": " << buffer << std::endl; // to be removed
-                this->Clients[currentClientFd]->appendToBuffer(std::string(buffer));
-                
-                
-                std::string cmd;
-                while (!(cmd = this->Clients[currentClientFd]->getNextCommandFromBuffer()).empty())
+
+                if (revents & POLLIN)
                 {
-                    this->router(cmd, currentClientFd);
+                    char buffer[1024];
+                    ssize_t bytesRead = recv(currentFd, buffer, sizeof(buffer) - 1, 0);
+                    if (bytesRead < 0)
+                    {
+                        if (errno != EAGAIN && errno != EWOULDBLOCK)
+                        {
+                            std::cerr << "Receive failed" << std::endl;
+                            this->closeClientConnection(currentFd);
+                            i--;
+                        }
+                        continue;
+                    }
+                    else if (bytesRead == 0)
+                    {
+                        this->closeClientConnection(currentFd);
+                        i--;
+                        continue;
+                    }
+                    buffer[bytesRead] = '\0';
+                    std::cout << "Received data from client " << currentFd << ": " << buffer << std::endl; // to be removed
+                    std::map<int, Client *>::iterator it = this->Clients.find(currentFd);
+                    if (it == this->Clients.end())
+                    {
+                        this->closeClientConnection(currentFd);
+                        i--;
+                        continue;
+                    }
+                    it->second->appendToInboundBuffer(std::string(buffer));
+                    std::string cmd;
+                    while (!(cmd = it->second->getNextCommandFromInboundBuffer()).empty())
+                    {
+                        this->router(cmd, currentFd);
+                    }
+                }
+
+                if (revents & POLLOUT)
+                {
+                    std::map<int, Client *>::iterator it = this->Clients.find(currentFd);
+                    if (it != this->Clients.end())
+                    {
+                        std::string &outbound = it->second->getOutboundBuffer();
+                        while (!outbound.empty())
+                        {
+                            ssize_t sent = send(currentFd, outbound.c_str(), outbound.size(), 0);
+                            if (sent > 0)
+                            {
+                                outbound.erase(0, sent);
+                                continue;
+                            }
+                            if (sent == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) // failed to send because the socket buffer is full, we'll try again next cycle
+                                break;
+
+                            this->closeClientConnection(currentFd); // any other -1 result is an error, so goodbye client
+                            i--;
+                            break;
+                        }
+                    }
                 }
             }
         }
