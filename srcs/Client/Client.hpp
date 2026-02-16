@@ -12,26 +12,30 @@ class Client{
 
         std::string ipAdress; // aalahyan was here
 
+        const unsigned long UID;
 
+        
+        
         bool    _hasPassword;
         bool    _hasNickname;
         bool    _hasUsername;
         bool    _isRegistered;
-
-
+        
+        
         void _init(){ // aalahyan was here
             _hasPassword = false;
             _hasNickname = false;
             _hasUsername = false;
             _isRegistered = false;
         }
-
-
+        
+        
+        static unsigned long    nextUID;
 
     public:
             Client();
             Client (int fd, std::string const &nickname);
-            Client(int fd, std::string nickname, std::string ipA){
+            Client(int fd, std::string nickname, std::string ipA):UID(nextUID++){
                 _init();
                 this->_socket = fd;
                 this->_nickname = nickname;
@@ -42,6 +46,9 @@ class Client{
             std::string getIpAddress(){ // aalahyan was here
                 return ipAdress;
             }
+
+            unsigned long   getUID(){return UID;}
+
             void        appendToInboundBuffer(std::string const &data){this->inboundBuffer += data;};
             std::string &getInboundBuffer() {return inboundBuffer;}; 
 
