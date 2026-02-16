@@ -17,12 +17,13 @@ std::vector<std::pair<std::string, std::string> > constructChannelAndPasses(std:
 
 void Server::handleJoinChannel(int socketId, std::vector<std::string> channelData)
 {
-    Client *client = this->Clients[socketId];
+    Client *client = this->findClientBySocketId(socketId);
+    if (!client) return;
     channelData.erase(channelData.begin());
     try
     {
         if (channelData.empty())
-            throw IrcException("Not enough parameters", 461); // ERR_NEEDMOREPARAMS
+            throw IrcException("Not enough parameters", ERR_NEEDMOREPARAMS);
 
         std::vector<std::pair<std::string, std::string> > channelsAndPasses = constructChannelAndPasses(channelData);
 
@@ -35,7 +36,7 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
                     std::string pass = channelsAndPasses[i].second;
     
                     if (name.at(0) != '#')
-                        throw IrcException("Invalid Channel Mask", 476);
+                        throw IrcException("Invalid Channel Mask", ERR_BADCHANMASK);
     
                     Channel *channel = getChannelByName(name);
     
