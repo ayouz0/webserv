@@ -284,15 +284,7 @@ void Server::router(const std::string &command, int clientSocket)
     }
     else if (cmd == "PRIVMSG")
     {
-        std::cerr << "Received PRIVMSG command" << std::endl; // to be removed
-        try
-        {
-            handlePrivMsg(clientSocket, tokens);
-        }
-        catch (IrcException &e)
-        {
-            sendMessageToClient(clientSocket, generateErrorResponce(e.getCode(), client->getNickname(), tokens[1], e.what()));
-        }
+        handlePrivMsg(clientSocket, tokens);
     }
     else if (cmd == "TOPIC")
     {

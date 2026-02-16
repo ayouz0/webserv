@@ -4,23 +4,24 @@ void Server::handleTopic(int clientSocket, std::vector<std::string> &tokens)
 {
     tokens.erase(tokens.begin());
 
-    Client *client = Clients[clientSocket];
+    Client *client = findClientBySocketId(clientSocket);
+    if (!client) return ;
     try
     {
         if (tokens.size() < 1)
-            throw IrcException("Not enough parameters", 461);
+            throw IrcException("Not enough parameters", ERR_NEEDMOREPARAMS);
         Channel *channel = getChannelByName(tokens.at(0));
         if (!channel)
-            throw IrcException("No such channel", 403);
+            throw IrcException("No such channel", ERR_NOSUCHCHANNEL);
 
         if (!channel->isMember(clientSocket))
-            throw IrcException("You're not on that channel", 442);
+            throw IrcException("You're not on that channel", ERR_NOTONCHANNEL);
 
         if (tokens.size() == 1)
         {
             //: irc.server.com 332 <client_nick> #ch :<topic_text>\r\n
             std::ostringstream oss;
-            oss << ":" << serverName << " " << 332 << " " << client->getNickname() << " " << channel->getName() << " :" << channel->getTopic() << "\r\n";
+            oss << ":" << serverName << " " << RPL_TOPIC << " " << client->getNickname() << " " << channel->getName() << " :" << channel->getTopic() << "\r\n";
             sendMessageToClient(clientSocket, oss.str());
         }
         else

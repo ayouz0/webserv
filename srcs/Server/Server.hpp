@@ -15,6 +15,9 @@
 # include <algorithm>
 #include <arpa/inet.h>
 
+
+#include "errors.hpp"
+
 #define MAX_CONNECTIONS SOMAXCONN
 /*
     @brief Server class to handle incoming client connections and manage communication
@@ -93,6 +96,8 @@ class Server {
         @note throws std::runtime_error
     */
     void router(const std::string &command, int clientSocket);
+
+    Client* findClientBySocketId(int socketId) const;
 
     /*
         @brief debug function to print the clients and channels data, to be removed later

@@ -1,30 +1,67 @@
 #include "../Server.hpp"
 
-void    Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens){
-    if (tokens.size() < 3) throw IrcException("Invalid number of argumenets", 122); // TODO check things
+void Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens)
+{
+    Client *client = findClientBySocketId(clientSocket);
+    if (!client)
+        return;
 
-    std::string dest = tokens.at(1);
+    if (tokens.size() < 2 || tokens.at(1).empty())
+        return sendMessageToClient(clientSocket, generateErrorResponce(ERR_NORECIPIENT, client->getNickname(), "PRIVMSG", "No recipient given (PRIVMSG)"));
 
-    if (dest.at(0) == '#')
+    if (tokens.size() < 3 || tokens.at(2).empty())
+        return sendMessageToClient(clientSocket, generateErrorResponce(ERR_NOTEXTTOSEND, client->getNickname(), "PRIVMSG", "No text to send"));
+
+    std::string message = tokens.at(2);
+    std::vector<std::string> dests = splitter(tokens.at(1), ',');
+    
+    if (dests.empty())
+        return sendMessageToClient(clientSocket, generateErrorResponce(ERR_NORECIPIENT, client->getNickname(), "PRIVMSG", "No recipient given (PRIVMSG)"));
+    for (size_t i = 0; i < dests.size(); i++)
     {
-        Channel* ch = getChannelByName(dest.substr(1));
-        //:user1!user1_username@127.0.0.1 JOIN #general\r\n
-        std::string message = ":" + Clients[clientSocket]->getNickname() + "!" + Clients[clientSocket]->getUsername() + "@" + \
-        Clients[clientSocket]->getIpAddress() + " PRIVMSG " + dest + " :" + tokens.at(2) + "\r\n";
+        std::string dest = dests.at(i);
         
-        if (ch) ch->broadcast(message, Clients[clientSocket]);
-    }
-    else
-    {
-        Client  *from = Clients[clientSocket];
-        Client  *to = getClientByNickname(dest);
+        if (dest.empty())
+            continue;
+        try
+        {
+            if (dest.at(0) == '#')
+            {
+                Channel *ch = getChannelByName(dest);
 
-        if (to){
-            std::string message = ":" + from->getNickname() + "!" + from->getUsername() + "@" + \
-            from->getIpAddress()    + " PRIVMSG " + to->getNickname() + " :" + tokens.at(2) + "\r\n";
-            sendMessageToClient(to->getSocket(), message);
+                if (!ch)
+                    throw IrcException("No such nick/channel", ERR_NOSUCHNICK);
+
+                if (!ch->isMember(clientSocket))
+                    throw IrcException("Cannot send to channel", ERR_CANNOTSENDTOCHAN);
+
+                //: user1!user1_username@127.0.0.1 JOIN #general\r\n
+                std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@" +
+                                  client->getIpAddress() + " PRIVMSG " + dest + " :" + message + "\r\n";
+
+                if (ch)
+                    ch->broadcast(msg, client);
+            }
+            else
+            {
+                Client *from = client;
+                Client *to = getClientByNickname(dest);
+
+                if (to)
+                {
+                    std::string msg = ":" + from->getNickname() + "!" + from->getUsername() + "@" +
+                                      from->getIpAddress() + " PRIVMSG " + to->getNickname() + " :" + message + "\r\n";
+                    sendMessageToClient(to->getSocket(), msg);
+                }
+                else
+                {
+                    throw IrcException("No such nick/channel", ERR_NOSUCHNICK);
+                }
+            }
+        }
+        catch (const IrcException &e)
+        {
+            sendMessageToClient(clientSocket, generateErrorResponce(e.getCode(), client->getNickname(), dest, e.what()));
         }
     }
-
 }
-

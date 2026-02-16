@@ -14,7 +14,9 @@ bool isValidUsername(const std::string &username)
 //       Parameters: <username> <hostname> <servername> <realname>
 void        Server::handleUserCommand(const std::vector<std::string> &tokens, int clientSocket) {
 
-    Client *client = this->Clients[clientSocket];
+    Client *client = this->findClientBySocketId(clientSocket);
+    if (!client) return;
+     
     if ( client->getPassState() == false ){
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(431, nickName, "USER", "Client did not set the password");
