@@ -8,7 +8,11 @@
 #include "../IrcException/IrcException.hpp"
 #include <sys/socket.h>
 #include <set>
+#include <sstream>
 #include "../Server/errors.hpp"
+
+
+class Server;
 
 class Channel
 {
@@ -43,7 +47,7 @@ class Channel
 
 public:
     Channel(Client &creator, std::string name)
-        : topic("No topic is set"), topic_lock(false), name(name),
+        : topic(""), topic_lock(false), name(name),
           invite_only(false), password(""), locked(false)
     {
         this->id = ++counter;
@@ -104,6 +108,16 @@ public:
         return NULL;
     }
 
+    Client *getMember(unsigned long UID)
+    {
+        for (size_t i = 0; i < members.size(); i++)
+        {
+            if (members[i].client->getUID() == UID)
+                return members[i].client;
+        }
+        return NULL;
+    }
+
     bool setPassword(const Client &c, std::string newPass)
     {
         if (!isModerator(c))
@@ -137,7 +151,8 @@ public:
         return false;
     }
 
-    bool    isMember(unsigned long UID){
+    bool isMember(unsigned long UID)
+    {
         for (size_t i = 0; i < members.size(); i++)
         {
             if (members.at(i).client->getUID() == UID)
@@ -146,29 +161,32 @@ public:
         return false;
     }
 
-    void    removeClient(unsigned long UID)
+    void removeClient(unsigned long UID)
     {
         for (size_t i = 0; i < members.size(); i++)
         {
             if (members[i].client->getUID() == UID)
             {
                 members.erase(members.begin() + i);
-                break ;
+                break;
             }
         }
         invited.erase(UID);
     }
 
-
-
-    bool    invite(const Client &c, unsigned long UID)
+    bool invite(const Client &c, unsigned long UID)
     {
-        if (invite_only && !isModerator(c)) throw IrcException("invite only channel", ERR_CHANOPRIVSNEEDED);
+        if (invite_only && !isModerator(c))
+            throw IrcException("invite only channel", ERR_CHANOPRIVSNEEDED);
         invited.insert(UID);
         return true;
     }
 
+    /*
+        @brief send RPL_TOPIC and users list to recent joined user
+    */
 
+    void welcome(Server &server, unsigned long UID);
 };
 
 #endif
