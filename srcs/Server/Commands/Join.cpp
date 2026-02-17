@@ -60,7 +60,8 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
                     std::string response = ":" + client->getNickname() + "!" + client->getUsername() +
                                         "@" + client->getIpAddress() + " JOIN " + channel->getName() + "\r\n";
     
-                    channel->broadcast(response);
+                    channel->broadcast(response); // tell members that user has joined
+                    channel->welcome(*this, client->getUID());
 
             }
             catch(const IrcException &e){
