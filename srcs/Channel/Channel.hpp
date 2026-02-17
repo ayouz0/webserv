@@ -7,6 +7,9 @@
 #include <iostream>
 #include "../IrcException/IrcException.hpp"
 #include <sys/socket.h>
+#include <set>
+#include "../Server/errors.hpp"
+
 class Channel
 {
     struct ChannelMember
@@ -18,6 +21,7 @@ class Channel
     };
 
     std::vector<ChannelMember> members;
+    std::set<unsigned long> invited;
     std::string topic;
     bool topic_lock;
     int id;
@@ -48,7 +52,8 @@ public:
 
     bool joinChannel(Client &c, std::string password)
     {
-        if (invite_only)
+        bool is_invited = invited.find(c.getUID()) != invited.end();
+        if (invite_only && !is_invited)
             throw IrcException("Cannot join channel (+i)", 473); // ERR_INVITEONLYCHAN
 
         if (locked && password != this->password)
@@ -57,6 +62,7 @@ public:
             return false; // already a member
 
         members.push_back(ChannelMember(c, false));
+        invited.erase(c.getUID()); // in case of invitation it should be no longer valifd
         return true;
     }
 
@@ -128,9 +134,41 @@ public:
             if (members.at(i).client->getSocket() == socket)
                 return true;
         }
-
         return false;
     }
+
+    bool    isMember(unsigned long UID){
+        for (size_t i = 0; i < members.size(); i++)
+        {
+            if (members.at(i).client->getUID() == UID)
+                return true;
+        }
+        return false;
+    }
+
+    void    removeClient(unsigned long UID)
+    {
+        for (size_t i = 0; i < members.size(); i++)
+        {
+            if (members[i].client->getUID() == UID)
+            {
+                members.erase(members.begin() + i);
+                break ;
+            }
+        }
+        invited.erase(UID);
+    }
+
+
+
+    bool    invite(const Client &c, unsigned long UID)
+    {
+        if (invite_only && !isModerator(c)) throw IrcException("invite only channel", ERR_CHANOPRIVSNEEDED);
+        invited.insert(UID);
+        return true;
+    }
+
+
 };
 
 #endif
