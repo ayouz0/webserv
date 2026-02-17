@@ -20,6 +20,7 @@ SRCS        = srcs/main.cpp \
             srcs/Server/Utils/getChannelByName.cpp \
             srcs/Server/Utils/sendMessageToClient.cpp \
             srcs/Server/Utils/findClientBySocket.cpp \
+            srcs/Server/Utils/leaveAllChannels.cpp \
             srcs/utils/tokenize.cpp \
             srcs/utils/splitter.cpp \
             srcs/Channel/Channel.cpp

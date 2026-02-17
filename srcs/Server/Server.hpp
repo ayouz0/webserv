@@ -111,6 +111,11 @@ class Server {
 
     Client* findClientBySocketId(int socketId) const;
 
+
+    void    leaveAllChannels(Client &c);
+
+    void    clearChannelsWithNoMembers();
+
     /*
         @brief debug function to print the clients and channels data, to be removed later
     */

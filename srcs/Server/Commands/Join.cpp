@@ -25,6 +25,7 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
         if (channelData.empty())
             throw IrcException("Not enough parameters", ERR_NEEDMOREPARAMS);
 
+        if (channelData.at(0) == "0") return leaveAllChannels(*client);
         std::vector<std::pair<std::string, std::string> > channelsAndPasses = constructChannelAndPasses(channelData);
 
 
@@ -34,8 +35,10 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
 
                     std::string name = channelsAndPasses[i].first;
                     std::string pass = channelsAndPasses[i].second;
+
+                    
     
-                    if (name.at(0) != '#')
+                    if (name.at(0) != '#' && name.at(0) != '&')
                         throw IrcException("Invalid Channel Mask", ERR_BADCHANMASK);
     
                     Channel *channel = getChannelByName(name);
