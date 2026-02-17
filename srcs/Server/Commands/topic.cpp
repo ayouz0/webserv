@@ -2,31 +2,33 @@
 
 void Server::handleTopic(int clientSocket, std::vector<std::string> &tokens)
 {
-    tokens.erase(tokens.begin());
+    // tokens.erase(tokens.begin());
 
     Client *client = findClientBySocketId(clientSocket);
-    if (!client) return ;
+    if (!client)
+        return;
+
     try
     {
-        if (tokens.size() < 1)
+        if (tokens.size() < 2)
             throw IrcException("Not enough parameters", ERR_NEEDMOREPARAMS);
-        Channel *channel = getChannelByName(tokens.at(0));
+        Channel *channel = getChannelByName(tokens.at(1));
         if (!channel)
             throw IrcException("No such channel", ERR_NOSUCHCHANNEL);
 
         if (!channel->isMember(clientSocket))
             throw IrcException("You're not on that channel", ERR_NOTONCHANNEL);
-
-        if (tokens.size() == 1)
+        if (tokens.size() == 2)
         {
             //: irc.server.com 332 <client_nick> #ch :<topic_text>\r\n
+            std::string topic = channel->getTopic();
             std::ostringstream oss;
-            oss << ":" << serverName << " " << RPL_TOPIC << " " << client->getNickname() << " " << channel->getName() << " :" << channel->getTopic() << "\r\n";
+            oss << ":" << serverName << " " << (topic.empty() ? RPL_NOTOPIC : RPL_TOPIC) << " " << client->getNickname() << " " << channel->getName() << " :" << (topic.empty() ? "No Topic Set" : topic) << "\r\n";
             sendMessageToClient(clientSocket, oss.str());
         }
         else
         {
-            channel->setTopic(*client, tokens[1]); // this validates client moderator permession
+            channel->setTopic(*client, tokens.at(2)); // this validates client moderator permession
             //:<nick>!<user>@<host> TOPIC #channel_name :<new_topic>\r\n
             std::string m = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getIpAddress() + " TOPIC " + channel->getName() + " :" + channel->getTopic();
             channel->broadcast(m);
