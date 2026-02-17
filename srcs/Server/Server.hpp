@@ -87,7 +87,7 @@ class Server {
     @param clientSocket - the sender's socket id
     @param tokens - the command tokens, where tokens[1] is the channel name and tokens[2] is the topic (optional)
     */
-        void    handleTopic(int clientSocket, std::vector<std::string> &tokens);
+    void    handleTopic(int clientSocket, std::vector<std::string> &tokens);
 
 
     /*
@@ -96,6 +96,15 @@ class Server {
         @note throws std::runtime_error
     */
     void router(const std::string &command, int clientSocket);
+
+
+    /*
+        @brief invites user to channel
+        @param clientSocker clinet docket serve as id, and the tokens which are recieved from client
+        @note syntax INVITE <nickname> <channel>
+    */
+
+    void    handleInvite(int clientSocket, std::vector<std::string> tokens);
 
     Client* findClientBySocketId(int socketId) const;
 

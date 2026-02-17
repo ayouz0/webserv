@@ -290,6 +290,10 @@ void Server::router(const std::string &command, int clientSocket)
     {
         handleTopic(clientSocket, tokens);
     }
+    else if (cmd == "INVITE")
+    {
+        handleInvite(clientSocket, tokens);
+    }
 }
 
 void Server::debug() const

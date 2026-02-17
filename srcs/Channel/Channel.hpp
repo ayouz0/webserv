@@ -62,6 +62,7 @@ public:
             return false; // already a member
 
         members.push_back(ChannelMember(c, false));
+        invited.erase(c.getUID()); // in case of invitation it should be no longer valifd
         return true;
     }
 
@@ -136,6 +137,15 @@ public:
         return false;
     }
 
+    bool    isMember(unsigned long UID){
+        for (size_t i = 0; i < members.size(); i++)
+        {
+            if (members.at(i).client->getUID() == UID)
+                return true;
+        }
+        return false;
+    }
+
     void    removeClient(unsigned long UID)
     {
         for (size_t i = 0; i < members.size(); i++)
@@ -153,7 +163,7 @@ public:
 
     bool    invite(const Client &c, unsigned long UID)
     {
-        if (invite_only && !isModerator(c)) throw IrcException("invite only channel", ERR_INVITEONLYCHAN);
+        if (invite_only && !isModerator(c)) throw IrcException("invite only channel", ERR_CHANOPRIVSNEEDED);
         invited.insert(UID);
         return true;
     }
