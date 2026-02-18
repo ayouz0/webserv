@@ -107,6 +107,7 @@ class Server {
     void    handleInvite(int clientSocket, std::vector<std::string> tokens);
 
 
+    void    handlePart(int clientSocket, std::vector<std::string> tokens );
 
 
     Client* findClientBySocketId(int socketId) const;

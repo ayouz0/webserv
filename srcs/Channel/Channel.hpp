@@ -58,10 +58,10 @@ public:
     {
         bool is_invited = invited.find(c.getUID()) != invited.end();
         if (invite_only && !is_invited)
-            throw IrcException("Cannot join channel (+i)", 473); // ERR_INVITEONLYCHAN
+            throw IrcException(MSG_INVITEONLYCHAN, ERR_INVITEONLYCHAN); // ERR_INVITEONLYCHAN
 
         if (locked && password != this->password)
-            throw IrcException("Bad channel key (+k)", 475); // ERR_BADCHANNELKEY
+            throw IrcException(MSG_BADCHANNELKEY, ERR_BADCHANNELKEY); // ERR_BADCHANNELKEY
         if (getMemberByNickname(c.getNickname()) != NULL)
             return false; // already a member
 
@@ -181,6 +181,21 @@ public:
         invited.insert(UID);
         return true;
     }
+
+
+    void    leave(unsigned long UID, std::string message){
+        if (!isMember(UID)) throw IrcException("You Are Not On That Channel", ERR_NOTONCHANNEL);
+
+        Client *c = getMember(UID);
+
+        if (!c) return ;
+
+        // :<nick>!<user>@<host> PART <channel> :<Part Message>\r\n
+        broadcast(":" + c->getNickname() + "!" + c->getUsername() + "@" + c->getIpAddress() + " PART " + name + " :" + message );
+
+        removeClient(UID);
+    }
+
 
     /*
         @brief send RPL_TOPIC and users list to recent joined user

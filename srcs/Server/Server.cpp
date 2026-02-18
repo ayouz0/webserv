@@ -294,6 +294,10 @@ void Server::router(const std::string &command, int clientSocket)
     {
         handleInvite(clientSocket, tokens);
     }
+    else if (cmd == "PART")
+    {
+        handlePart(clientSocket, tokens);
+    }
 }
 
 void Server::debug() const
