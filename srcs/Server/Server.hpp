@@ -110,6 +110,8 @@ class Server {
     void    handlePart(int clientSocket, std::vector<std::string> tokens );
 
 
+    void    handleKick(int clientSocket, std::vector<std::string> tokens);
+
     Client* findClientBySocketId(int socketId) const;
 
 
