@@ -11,15 +11,15 @@ void Server::handleInvite(int clientSocket, std::vector<std::string> tokens)
         
 
         if (tokens.size() < 3)
-            throw IrcException("Need More Params", ERR_NEEDMOREPARAMS);
+            throw IrcException(MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
         Client *invitedClient = getClientByNickname(tokens.at(1));
         if (!invitedClient)
-            throw IrcException("No Such Nick", ERR_NOSUCHNICK);
+            throw IrcException(MSG_NOSUCHNICK, ERR_NOSUCHNICK);
         Channel *channel = getChannelByName(tokens.at(2));
         if (!channel || !channel->isMember(client->getUID()))
-            throw IrcException("No Such Channel", ERR_NOSUCHCHANNEL);
+            throw IrcException(MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
         if (channel->isMember(invitedClient->getUID()))
-            throw IrcException("User Already In Channel", ERR_USERONCHANNEL);
+            throw IrcException(MSG_USERONCHANNEL, ERR_USERONCHANNEL);
         channel->invite(*client, invitedClient->getUID()); //ATTENTION this will throw ERR_CHANOPRIVSNEEDED  exception
 
         std::ostringstream oss;

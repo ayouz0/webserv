@@ -58,10 +58,10 @@ public:
     {
         bool is_invited = invited.find(c.getUID()) != invited.end();
         if (invite_only && !is_invited)
-            throw IrcException(MSG_INVITEONLYCHAN, ERR_INVITEONLYCHAN); // ERR_INVITEONLYCHAN
+            throw IrcException(MSG_INVITEONLYCHAN, ERR_INVITEONLYCHAN);
 
         if (locked && password != this->password)
-            throw IrcException(MSG_BADCHANNELKEY, ERR_BADCHANNELKEY); // ERR_BADCHANNELKEY
+            throw IrcException(MSG_BADCHANNELKEY, ERR_BADCHANNELKEY);
         if (getMemberByNickname(c.getNickname()) != NULL)
             return false; // already a member
 
@@ -73,7 +73,7 @@ public:
     bool setTopic(const Client &c, std::string topic)
     {
         if (topic_lock && !isModerator(c))
-            throw IrcException("You're not channel operator", 482); // ERR_CHANOPRIVSNEEDED
+            throw IrcException(MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
 
         this->topic = topic;
         return true;
@@ -121,7 +121,7 @@ public:
     bool setPassword(const Client &c, std::string newPass)
     {
         if (!isModerator(c))
-            throw IrcException("You're not channel operator", 482); // ERR_CHANOPRIVSNEEDED
+            throw IrcException(MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
 
         this->password = newPass;
         this->locked = !newPass.empty();
@@ -177,14 +177,14 @@ public:
     bool invite(const Client &c, unsigned long UID)
     {
         if (invite_only && !isModerator(c))
-            throw IrcException("invite only channel", ERR_CHANOPRIVSNEEDED);
+            throw IrcException(MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
         invited.insert(UID);
         return true;
     }
 
 
     void    leave(unsigned long UID, std::string message){
-        if (!isMember(UID)) throw IrcException("You Are Not On That Channel", ERR_NOTONCHANNEL);
+        if (!isMember(UID)) throw IrcException(MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
 
         Client *c = getMember(UID);
 
