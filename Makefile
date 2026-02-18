@@ -15,11 +15,13 @@ SRCS        = srcs/main.cpp \
             srcs/Server/Commands/privmsg.cpp \
             srcs/Server/Commands/topic.cpp \
             srcs/Server/Commands/invite.cpp \
+            srcs/Server/Commands/part.cpp \
             srcs/Server/Utils/closeClientConnection.cpp \
             srcs/Server/Utils/generateErrorResponce.cpp \
             srcs/Server/Utils/getChannelByName.cpp \
             srcs/Server/Utils/sendMessageToClient.cpp \
             srcs/Server/Utils/findClientBySocket.cpp \
+            srcs/Server/Utils/leaveAllChannels.cpp \
             srcs/utils/tokenize.cpp \
             srcs/utils/splitter.cpp \
             srcs/Channel/Channel.cpp

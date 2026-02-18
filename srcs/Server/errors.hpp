@@ -35,4 +35,44 @@
 #define ERR_BADCHANMASK 476
 #define ERR_CHANOPRIVSNEEDED 482
 
+
+// ==========================================
+// SUCCESS / REPLY MESSAGES (RPL_)
+// ==========================================
+// Note: RPL_AWAY, RPL_TOPIC, RPL_INVITING, and RPL_NAMREPLY 
+// do not have static strings. Their text is completely dynamic 
+// (e.g., the actual topic, or the list of users).
+#define MSG_WELCOME "Welcome to the Internet Relay Network"
+#define MSG_NOTOPIC "No topic is set"
+#define MSG_ENDOFNAMES "End of NAMES list"
+
+// ==========================================
+// ERROR MESSAGES (ERR_)
+// ==========================================
+#define MSG_NOSUCHNICK "No such nick/channel"
+#define MSG_NOSUCHSERVER "No such server"
+#define MSG_NOSUCHCHANNEL "No such channel"
+#define MSG_CANNOTSENDTOCHAN "Cannot send to channel"
+#define MSG_TOOMANYCHANNELS "You have joined too many channels"
+#define MSG_NORECIPIENT "No recipient given"
+#define MSG_NOTEXTTOSEND "No text to send"
+#define MSG_UNKNOWNCOMMAND "Unknown command"
+#define MSG_NONICKNAMEGIVEN "No nickname given"
+#define MSG_ERRONEUSNICKNAME "Erroneous nickname"
+#define MSG_NICKNAMEINUSE "Nickname is already in use"
+#define MSG_USERNOTINCHANNEL "They aren't on that channel"
+#define MSG_NOTONCHANNEL "You're not on that channel"
+#define MSG_USERONCHANNEL "is already on channel"
+#define MSG_NOTREGISTERED "You have not registered"
+#define MSG_NEEDMOREPARAMS "Not enough parameters"
+#define MSG_ALREADYREGISTRED "Unauthorized command (already registered)"
+#define MSG_PASSWDMISMATCH "Password incorrect"
+#define MSG_CHANNELISFULL "Cannot join channel (+l)"
+#define MSG_UNKNOWNMODE "is unknown mode char to me for" // Special case (no colon at start, read below)
+#define MSG_INVITEONLYCHAN "Cannot join channel (+i)"
+#define MSG_BANNEDFROMCHAN "Cannot join channel (+b)"
+#define MSG_BADCHANNELKEY "Cannot join channel (+k)"
+#define MSG_BADCHANMASK "Bad Channel Mask"
+#define MSG_CHANOPRIVSNEEDED "You're not channel operator"
+
 #endif

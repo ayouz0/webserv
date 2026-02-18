@@ -30,10 +30,10 @@ void Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens)
                 Channel *ch = getChannelByName(dest);
 
                 if (!ch)
-                    throw IrcException("No such nick/channel", ERR_NOSUCHNICK);
+                    throw IrcException(MSG_NOSUCHNICK, ERR_NOSUCHNICK);
 
                 if (!ch->isMember(clientSocket))
-                    throw IrcException("Cannot send to channel", ERR_CANNOTSENDTOCHAN);
+                    throw IrcException(MSG_CANNOTSENDTOCHAN, ERR_CANNOTSENDTOCHAN);
 
                 //: user1!user1_username@127.0.0.1 JOIN #general\r\n
                 std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@" +
@@ -55,7 +55,7 @@ void Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens)
                 }
                 else
                 {
-                    throw IrcException("No such nick/channel", ERR_NOSUCHNICK);
+                    throw IrcException(MSG_NOSUCHNICK, ERR_NOSUCHNICK);
                 }
             }
         }
