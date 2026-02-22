@@ -47,8 +47,6 @@ class Server {
 
         Server(std::string const &port, std::string const &password);
         ~Server();
-        void    authenticateClient(int clientSocket) throw() ;
-
         void    closeClientConnection(int clientSocket) throw();
 
         void    start();
