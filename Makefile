@@ -1,22 +1,30 @@
 NAME        = ft_irc
 
 CXX         = c++
-CXXFLAGS    = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS    = -Wall -Wextra -Werror -std=c++98 -fmax-errors=1
 
 SRCS_DIR    = srcs
 
 SRCS        = srcs/main.cpp \
-              srcs/Client/Client.cpp \
-              srcs/Server/Server.cpp \
-              srcs/Server/Commands/Nick.cpp \
-              srcs/Server/Commands/Pass.cpp \
-              srcs/Server/Commands/User.cpp \
-              srcs/Server/Commands/Join.cpp \
-              srcs/Server/Utils/closeClientConnection.cpp \
-              srcs/Server/Utils/generateErrorResponce.cpp \
-              srcs/Server/Utils/sendMessageToClient.cpp \
-              srcs/utils/tokenize.cpp \
-              srcs/Channel/Channel.cpp
+            srcs/Client/Client.cpp \
+            srcs/Server/Server.cpp \
+            srcs/Server/Commands/Nick.cpp \
+            srcs/Server/Commands/Pass.cpp \
+            srcs/Server/Commands/User.cpp \
+            srcs/Server/Commands/Join.cpp \
+            srcs/Server/Commands/privmsg.cpp \
+            srcs/Server/Commands/topic.cpp \
+            srcs/Server/Commands/invite.cpp \
+            srcs/Server/Commands/part.cpp \
+            srcs/Server/Utils/closeClientConnection.cpp \
+            srcs/Server/Utils/generateErrorResponce.cpp \
+            srcs/Server/Utils/getChannelByName.cpp \
+            srcs/Server/Utils/sendMessageToClient.cpp \
+            srcs/Server/Utils/findClientBySocket.cpp \
+            srcs/Server/Utils/leaveAllChannels.cpp \
+            srcs/utils/tokenize.cpp \
+            srcs/utils/splitter.cpp \
+            srcs/Channel/Channel.cpp
 
 OBJS        = $(SRCS:.cpp=.o)
 

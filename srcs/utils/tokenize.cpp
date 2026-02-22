@@ -4,6 +4,7 @@ static std::string *getNexToken(const std::string &m, int &i)
 {
     bool break_space = true;
     int len = m.length();
+    bool    seen_column = false;
 
     while (i < len && std::isspace(m.at(i)))
         i++;
@@ -13,6 +14,7 @@ static std::string *getNexToken(const std::string &m, int &i)
         if (m.at(i) == ':' && break_space)
         {
             break_space = false;
+            seen_column = true;
             start = ++i;
             continue;
         }
@@ -22,7 +24,7 @@ static std::string *getNexToken(const std::string &m, int &i)
         i++;
     }
 
-    if (start != i)
+    if (start != i || seen_column) 
     {
         return  new std::string(m.substr(start, i - start));
     }

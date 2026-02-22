@@ -2,7 +2,7 @@
 
 void    Server::handlePassCommand(const std::vector<std::string> &tokens, int clientSocket){
 
-    Client *client = this->Clients[clientSocket];
+    Client *client = findClientBySocketId(clientSocket);
 
     if ( client->isRegistered() == true ){
 

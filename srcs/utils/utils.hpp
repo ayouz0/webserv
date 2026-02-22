@@ -9,4 +9,6 @@
 /// @return vector of tokens
 std::vector<std::string>    Tokenize(const std::string &message);
 
+std::vector<std::string>    splitter(const std::string &str, char delimiter);
+
 #endif

@@ -1,51 +1,77 @@
 #include "../Server.hpp"
-# include "../../Channel/Channel.hpp"
+#include "../../Channel/Channel.hpp"
+
+std::vector<std::pair<std::string, std::string> > constructChannelAndPasses(std::vector<std::string> data)
+{
+    std::vector<std::string> channels = splitter(data[0], ',');
+    std::vector<std::string> passes = (data.size() >= 2) ? splitter(data[1], ',') : std::vector<std::string>();
+
+    std::vector<std::pair<std::string, std::string> > channelsAndPasses;
+    for (size_t i = 0; i < channels.size(); i++)
+    {
+        std::string pass = (i < passes.size()) ? passes[i] : "";
+        channelsAndPasses.push_back(std::make_pair(channels[i], pass));
+    }
+    return channelsAndPasses;
+}
 
 void Server::handleJoinChannel(int socketId, std::vector<std::string> channelData)
 {
-    Client *client = this->Clients[socketId];
+    Client *client = this->findClientBySocketId(socketId);
+    if (!client) return;
     channelData.erase(channelData.begin());
-
     try
     {
         if (channelData.empty())
-            throw IrcException("Not enough parameters", 461); // ERR_NEEDMOREPARAMS
+            throw IrcException(MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
 
-        Channel *ch = NULL;
-        std::string name = channelData.at(0);
-        std::string pass = (channelData.size() >= 2) ? channelData.at(1) : "";
+        if (channelData.at(0) == "0") return leaveAllChannels(*client);
+        std::vector<std::pair<std::string, std::string> > channelsAndPasses = constructChannelAndPasses(channelData);
 
-        for (size_t i = 0; i < channels.size(); i++)
+
+        for (size_t i = 0; i < channelsAndPasses.size(); i++)
         {
-            if (channels[i].getName() == name)
-            {
-                ch = &(channels[i]);
-                break;
+            try{
+
+                    std::string name = channelsAndPasses[i].first;
+                    std::string pass = channelsAndPasses[i].second;
+
+                    
+    
+                    if (name.at(0) != '#' && name.at(0) != '&')
+                        throw IrcException(MSG_BADCHANMASK, ERR_BADCHANMASK);
+    
+                    Channel *channel = getChannelByName(name);
+    
+                    if (channel)
+                    {
+                        if (!channel->joinChannel(*client, pass))
+                            continue; // already a member, do nothing
+                    }
+                    else
+                    {
+                        Channel newChannel(*client, name);
+                        if (!pass.empty())
+                        {
+                            newChannel.setPassword(*client, pass);
+                        }
+                        channels.push_back(newChannel);
+                        // After push_back, get the pointer to the element in the vector
+                        channel = &channels.back();
+                    }
+    
+                    std::string response = ":" + client->getNickname() + "!" + client->getUsername() +
+                                        "@" + client->getIpAddress() + " JOIN " + channel->getName() + "\r\n";
+    
+                    channel->broadcast(response); // tell members that user has joined
+                    channel->welcome(*this, client->getUID());
+
             }
-        }
-
-        if (ch)
-        {
-            ch->joinChannel(*client, pass);
-        }
-        else
-        {
-            Channel newChannel(*client, name);
-            if (!pass.empty())
-            {
-                newChannel.setPassword(*client, pass);
+            catch(const IrcException &e){
+                sendMessageToClient(socketId, this->generateErrorResponce(e.getCode(), client->getNickname(), "JOIN", e.what()));
             }
-            channels.push_back(newChannel);
-            // After push_back, get the pointer to the element in the vector
-            ch = &channels.back();
+
         }
-
-        std::string response = ":" + client->getNickname() + "!" + client->getUsername() + 
-                      "@" + client->getIpAddress() + " JOIN " + ch->getName() + "\r\n";
-        
-        std::cout << "joined " << ch->getName() << std::endl; // to be removed
-        ch->broadcast(response);
-
     }
     catch (const IrcException &e)
     {
