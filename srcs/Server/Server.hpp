@@ -119,6 +119,8 @@ class Server {
         @brief debug function to print the clients and channels data, to be removed later
     */
     void debug() const;
+
+    void    welcomeBurst(int clientSocket);
 };
 
 #endif

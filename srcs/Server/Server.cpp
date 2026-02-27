@@ -380,3 +380,17 @@ void Server::debug() const
     std::cout << muted << "+----------------------+------------------------------------------+\n"
               << reset;
 }
+// @brief sends a welcome burst to a client
+void    Server::welcomeBurst(int clientSocket){
+    Client *client = this->Clients[clientSocket];
+
+    std::string msgs;
+
+    msgs += generateErrorResponce(1, client->getNickname(), "", "Welcome to the Internet Relay Network " + client->getNickname()) + "\r\n";
+    msgs += generateErrorResponce(2, client->getNickname(), "", "Your host is " + this->serverName + ", running version 1.0") + "\r\n";
+    msgs += generateErrorResponce(3, client->getNickname(), "", "This server was created today") + "\r\n";
+    msgs += generateErrorResponce(4, client->getNickname(), this->serverName , " 1.0"); + "\r\n";
+
+    this->sendMessageToClient(clientSocket, msgs);
+    
+}
