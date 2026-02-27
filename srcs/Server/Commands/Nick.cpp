@@ -57,6 +57,7 @@ void    Server::handleNickCommand(const std::vector<std::string> &tokens, int cl
 
     if ( client->canRegister() == true ) {
         client->setRegistered(true);
+        welcomeBurst(clientSocket);
     }
 
 }

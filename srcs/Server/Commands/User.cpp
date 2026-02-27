@@ -59,5 +59,6 @@ void        Server::handleUserCommand(const std::vector<std::string> &tokens, in
     client->setUserState(true);
     if(client->canRegister()){
         client->setRegistered(true);
+        welcomeBurst(clientSocket);
     }
 }
