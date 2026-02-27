@@ -23,7 +23,7 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
     try
     {
         if (channelData.empty())
-            throw IrcException(MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
+            throw IrcException("JOIN", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
 
         if (channelData.at(0) == "0") return leaveAllChannels(*client);
         std::vector<std::pair<std::string, std::string> > channelsAndPasses = constructChannelAndPasses(channelData);
@@ -39,7 +39,7 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
                     
     
                     if (name.at(0) != '#' && name.at(0) != '&')
-                        throw IrcException(MSG_BADCHANMASK, ERR_BADCHANMASK);
+                        throw IrcException(name, MSG_BADCHANMASK, ERR_BADCHANMASK);
     
                     Channel *channel = getChannelByName(name);
     
@@ -68,13 +68,13 @@ void Server::handleJoinChannel(int socketId, std::vector<std::string> channelDat
 
             }
             catch(const IrcException &e){
-                sendMessageToClient(socketId, this->generateErrorResponce(e.getCode(), client->getNickname(), "JOIN", e.what()));
+                sendMessageToClient(socketId, this->generateErrorResponce(e.getCode(), client->getNickname(), e.getContext(), e.what()));
             }
 
         }
     }
     catch (const IrcException &e)
     {
-        sendMessageToClient(socketId, this->generateErrorResponce(e.getCode(), client->getNickname(), "JOIN", e.what()));
+        sendMessageToClient(socketId, this->generateErrorResponce(e.getCode(), client->getNickname(), e.getContext(), e.what()));
     }
 }

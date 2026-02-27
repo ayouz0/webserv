@@ -35,20 +35,11 @@
 #define ERR_BADCHANMASK 476
 #define ERR_CHANOPRIVSNEEDED 482
 
-
-// ==========================================
-// SUCCESS / REPLY MESSAGES (RPL_)
-// ==========================================
-// Note: RPL_AWAY, RPL_TOPIC, RPL_INVITING, and RPL_NAMREPLY 
-// do not have static strings. Their text is completely dynamic 
-// (e.g., the actual topic, or the list of users).
+// =============================================================
 #define MSG_WELCOME "Welcome to the Internet Relay Network"
 #define MSG_NOTOPIC "No topic is set"
 #define MSG_ENDOFNAMES "End of NAMES list"
 
-// ==========================================
-// ERROR MESSAGES (ERR_)
-// ==========================================
 #define MSG_NOSUCHNICK "No such nick/channel"
 #define MSG_NOSUCHSERVER "No such server"
 #define MSG_NOSUCHCHANNEL "No such channel"

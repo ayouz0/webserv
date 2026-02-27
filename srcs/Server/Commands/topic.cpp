@@ -11,13 +11,13 @@ void Server::handleTopic(int clientSocket, std::vector<std::string> &tokens)
     try
     {
         if (tokens.size() < 2)
-            throw IrcException(MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
+            throw IrcException("TOPIC", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
         Channel *channel = getChannelByName(tokens.at(1));
         if (!channel)
-            throw IrcException(MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
+            throw IrcException(tokens.at(1), MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
 
         if (!channel->isMember(clientSocket))
-            throw IrcException(MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
+            throw IrcException(tokens.at(1), MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
         if (tokens.size() == 2)
         {
             //: irc.server.com 332 <client_nick> #ch :<topic_text>\r\n
@@ -36,6 +36,6 @@ void Server::handleTopic(int clientSocket, std::vector<std::string> &tokens)
     }
     catch (IrcException &e)
     {
-        sendMessageToClient(clientSocket, this->generateErrorResponce(e.getCode(), client->getNickname(), "TOPIC", e.what()));
+        sendMessageToClient(clientSocket, this->generateErrorResponce(e.getCode(), client->getNickname(), e.getContext(), e.what()));
     }
 }

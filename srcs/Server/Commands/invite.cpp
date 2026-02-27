@@ -11,15 +11,15 @@ void Server::handleInvite(int clientSocket, std::vector<std::string> tokens)
         
 
         if (tokens.size() < 3)
-            throw IrcException(MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
+                    throw IrcException("INVITE", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
         Client *invitedClient = getClientByNickname(tokens.at(1));
         if (!invitedClient)
-            throw IrcException(MSG_NOSUCHNICK, ERR_NOSUCHNICK);
+                    throw IrcException(tokens.at(1), MSG_NOSUCHNICK, ERR_NOSUCHNICK);
         Channel *channel = getChannelByName(tokens.at(2));
         if (!channel || !channel->isMember(client->getUID()))
-            throw IrcException(MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
+                    throw IrcException(tokens.at(2), MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
         if (channel->isMember(invitedClient->getUID()))
-            throw IrcException(MSG_USERONCHANNEL, ERR_USERONCHANNEL);
+                    throw IrcException(invitedClient->getNickname(), MSG_USERONCHANNEL, ERR_USERONCHANNEL);
         channel->invite(*client, invitedClient->getUID()); //ATTENTION this will throw ERR_CHANOPRIVSNEEDED  exception
 
         std::ostringstream oss;
@@ -31,6 +31,6 @@ void Server::handleInvite(int clientSocket, std::vector<std::string> tokens)
     }
     catch (const IrcException &e)
     {
-        sendMessageToClient(clientSocket, generateErrorResponce(e.getCode(), client->getNickname(), "INVITE", e.what()));
+        sendMessageToClient(clientSocket, generateErrorResponce(e.getCode(), client->getNickname(), e.getContext(), e.what()));
     }
 }
