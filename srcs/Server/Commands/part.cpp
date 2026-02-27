@@ -6,7 +6,7 @@ void    Server::handlePart(int clientSocket, std::vector<std::string> tokens){
     if (!client) return ;
 
     try{
-        if (tokens.size() < 2) throw IrcException(MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
+        if (tokens.size() < 2) throw IrcException("PART", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
 
         std::vector<std::string> channelsToLeave = splitter(tokens.at(1), ',');
 
@@ -17,11 +17,11 @@ void    Server::handlePart(int clientSocket, std::vector<std::string> tokens){
                 if (channelName.empty()) continue;
 
                 if (channelName.at(0) != '#' && channelName.at(0) != '&')
-                    throw IrcException(MSG_BADCHANMASK,  ERR_BADCHANMASK);
+                    throw IrcException(channelName, MSG_BADCHANMASK,  ERR_BADCHANMASK);
 
                 Channel *channelPtr = getChannelByName(channelName);
 
-                if (!channelPtr) throw IrcException(MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
+                if (!channelPtr) throw IrcException(channelName, MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
 
                 std::string message = tokens.size() > 2 ? tokens.at(2) : client->getNickname();
                 channelPtr->leave(client->getUID(), message); // this checks membership and broadast message
@@ -30,13 +30,13 @@ void    Server::handlePart(int clientSocket, std::vector<std::string> tokens){
 
             }
             catch(const IrcException &e){
-                 sendMessageToClient(clientSocket, this->generateErrorResponce(e.getCode(), client->getNickname(), channelName, e.what()));
+                 sendMessageToClient(clientSocket, this->generateErrorResponce(e.getCode(), client->getNickname(), e.getContext(), e.what()));
             }
         }
     }
     catch (const IrcException &e)
     {
-        sendMessageToClient(clientSocket, this->generateErrorResponce(e.getCode(), client->getNickname(), "PART", e.what()));
+        sendMessageToClient(clientSocket, this->generateErrorResponce(e.getCode(), client->getNickname(), e.getContext(), e.what()));
     }
 
 }

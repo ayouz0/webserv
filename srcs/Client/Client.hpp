@@ -47,7 +47,7 @@ class Client{
                 return ipAdress;
             }
 
-            unsigned long   getUID(){return UID;}
+            unsigned long   getUID() const {return UID;}
 
             void        appendToInboundBuffer(std::string const &data){this->inboundBuffer += data;};
             std::string &getInboundBuffer() {return inboundBuffer;}; 

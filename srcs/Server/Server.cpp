@@ -298,6 +298,10 @@ void Server::router(const std::string &command, int clientSocket)
     {
         handlePart(clientSocket, tokens);
     }
+    else if (cmd == "KICK")
+    {
+        handleKick(clientSocket, tokens);
+    }
 }
 
 void Server::debug() const
@@ -389,7 +393,7 @@ void    Server::welcomeBurst(int clientSocket){
     msgs += generateErrorResponce(1, client->getNickname(), "", "Welcome to the Internet Relay Network " + client->getNickname()) + "\r\n";
     msgs += generateErrorResponce(2, client->getNickname(), "", "Your host is " + this->serverName + ", running version 1.0") + "\r\n";
     msgs += generateErrorResponce(3, client->getNickname(), "", "This server was created today") + "\r\n";
-    msgs += generateErrorResponce(4, client->getNickname(), this->serverName , " 1.0"); + "\r\n";
+    msgs += generateErrorResponce(4, client->getNickname(), this->serverName , " 1.0"); //+ "\r\n";
 
     this->sendMessageToClient(clientSocket, msgs);
     

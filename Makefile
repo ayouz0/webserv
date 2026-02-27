@@ -16,6 +16,7 @@ SRCS        = srcs/main.cpp \
             srcs/Server/Commands/topic.cpp \
             srcs/Server/Commands/invite.cpp \
             srcs/Server/Commands/part.cpp \
+            srcs/Server/Commands/kick.cpp \
             srcs/Server/Utils/closeClientConnection.cpp \
             srcs/Server/Utils/generateErrorResponce.cpp \
             srcs/Server/Utils/getChannelByName.cpp \

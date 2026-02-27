@@ -39,7 +39,7 @@ class Channel
     {
         for (size_t i = 0; i < members.size(); i++)
         {
-            if (members[i].client->getNickname() == c.getNickname())
+            if (members[i].client->getUID() == c.getUID())
                 return members[i].moderator;
         }
         return false;
@@ -58,10 +58,10 @@ public:
     {
         bool is_invited = invited.find(c.getUID()) != invited.end();
         if (invite_only && !is_invited)
-            throw IrcException(MSG_INVITEONLYCHAN, ERR_INVITEONLYCHAN);
+            throw IrcException(name, MSG_INVITEONLYCHAN, ERR_INVITEONLYCHAN);
 
         if (locked && password != this->password)
-            throw IrcException(MSG_BADCHANNELKEY, ERR_BADCHANNELKEY);
+            throw IrcException(name, MSG_BADCHANNELKEY, ERR_BADCHANNELKEY);
         if (getMemberByNickname(c.getNickname()) != NULL)
             return false; // already a member
 
@@ -73,7 +73,7 @@ public:
     bool setTopic(const Client &c, std::string topic)
     {
         if (topic_lock && !isModerator(c))
-            throw IrcException(MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
+            throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
 
         this->topic = topic;
         return true;
@@ -121,7 +121,7 @@ public:
     bool setPassword(const Client &c, std::string newPass)
     {
         if (!isModerator(c))
-            throw IrcException(MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
+            throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
 
         this->password = newPass;
         this->locked = !newPass.empty();
@@ -177,14 +177,14 @@ public:
     bool invite(const Client &c, unsigned long UID)
     {
         if (invite_only && !isModerator(c))
-            throw IrcException(MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
+            throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
         invited.insert(UID);
         return true;
     }
 
 
     void    leave(unsigned long UID, std::string message){
-        if (!isMember(UID)) throw IrcException(MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
+        if (!isMember(UID)) throw IrcException(name, MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
 
         Client *c = getMember(UID);
 
@@ -195,6 +195,12 @@ public:
 
         removeClient(UID);
     }
+
+
+    /*
+        WARNING: this throws IRcException    
+    */
+    void    kickMultipleMembers(unsigned long UID, std::vector<std::string> &targets, Server &server, std::string comment);
 
 
     /*
