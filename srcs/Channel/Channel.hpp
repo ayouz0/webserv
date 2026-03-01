@@ -35,15 +35,7 @@ class Channel
     static size_t counter;
     bool locked;
 
-    bool isModerator(const Client &c) const
-    {
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (members[i].client->getUID() == c.getUID())
-                return members[i].moderator;
-        }
-        return false;
-    }
+    
 
 public:
     Channel(Client &creator, std::string name)
@@ -68,6 +60,16 @@ public:
         members.push_back(ChannelMember(c, false));
         invited.erase(c.getUID()); // in case of invitation it should be no longer valifd
         return true;
+    }
+
+    bool isModerator(const Client &c) const
+    {
+        for (size_t i = 0; i < members.size(); i++)
+        {
+            if (members[i].client->getUID() == c.getUID())
+                return members[i].moderator;
+        }
+        return false;
     }
 
     bool setTopic(const Client &c, std::string topic)

@@ -47,15 +47,15 @@ void Channel::kickMultipleMembers(unsigned long UID, std::vector<std::string> &t
 		{
 			Client *executor = getMember(UID);
 			if (!executor)
-				throw IrcException(name, MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
+				throw IrcException(name, MSG_NOTONCHANNEL, ERR_NOTONCHANNEL); // executor not on channel
 			if (!isModerator(*executor))
-				throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
+				throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED); // executor is in channel but not moderator
 			Client *target = server.getClientByNickname(targets.at(i));
 			if (!target)
 				throw IrcException(targets.at(i) + " " + name, MSG_USERNOTINCHANNEL, ERR_USERNOTINCHANNEL);
 			// :<executor_nick>!<executor_user>@<executor_host> KICK <channel> <target_nick> :comment or nick
 			std::string response = ":" + executor->getNickname() + "!" + executor->getUsername() +
-								   "@" + executor->getIpAddress() + " KICK " + name + +" " + target->getNickname() + " :" + comment + "\r\n";
+								   "@" + executor->getIpAddress() + " KICK " + name + " " + target->getNickname() + " :" + comment + "\r\n";
 			broadcast(response);
 			removeClient(target->getUID());
 		}
