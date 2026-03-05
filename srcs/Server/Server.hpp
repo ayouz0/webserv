@@ -21,17 +21,16 @@
 /*
     @brief Server class to handle incoming client connections and manage communication
 */
-
 class Server
 {
 private:
-    int serverSocket;
-    std::string _ServerPassword;
-    struct sockaddr_in serverAddr;
-    std::vector<pollfd> clientSockets;
+    int                     serverSocket;
+    std::string             _ServerPassword;
+    struct sockaddr_in      serverAddr;
+    std::vector<pollfd>     clientSockets;
     std::map<int, Client *> Clients;
-    std::vector<Channel> channels;
-    std::string serverName;
+    std::vector<Channel>    channels;
+    std::string             serverName;
 
 public:
     Server(std::string const &port, std::string const &password);
@@ -115,6 +114,8 @@ public:
     void handlePart(int clientSocket, std::vector<std::string> tokens);
 
     void handleKick(int clientSocket, std::vector<std::string> tokens);
+
+    void handleMode(int clientSocket, std::vector<std::string> &tokens);
 
     Client *findClientBySocketId(int socketId) const;
 
