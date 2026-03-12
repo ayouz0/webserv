@@ -67,3 +67,42 @@ void Channel::kickMultipleMembers(unsigned long UID, std::vector<std::string> &t
 		}
 	}
 }
+
+
+//:irc.localhost 482 user1 #mychannel :You're not channel operator
+
+// we need broadcasting
+bool Channel::applyMode(Server &server, Client *client, bool state, char mode, std::string parameter){
+	if (this->isModerator(*client) == false){
+        server.sendMessageToClient(client->getSocket(), server.generateErrorResponce(ERR_CHANOPRIVSNEEDED, client->getNickname(),  '#' + this->getName(), "You're not channel operator"));
+        return false;
+	}
+
+	switch (mode)
+	{
+	case 'i':
+		if (state == true)
+			this->invite_only = true;
+		else if (state == false){
+			this->invite_only = false;
+		}
+		break;
+
+	case 't':
+		// what the fuck does that even mean
+		break;
+		
+	case 'k':
+		// couldn't find a proper method
+		break;
+	case 'o':
+		if (state){
+			
+		}
+		break;
+		
+	default:
+		break;
+	}
+}
+
