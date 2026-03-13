@@ -10,6 +10,12 @@ enum modeChar{
 
 #define Plus  true
 #define Minus false
+struct ModeChange {
+    bool state;
+    char mode;
+    std::string param;
+};
+
 // MODE #channel *( ( "+" / "-" ) *( "i" / "t" / "k" / "o" / "l" ) ) [args...]
 void Server::handleMode(int clientSocket, std::vector<std::string> &tokens) {
     Client *client = Clients[clientSocket];
@@ -36,50 +42,59 @@ void Server::handleMode(int clientSocket, std::vector<std::string> &tokens) {
         return;
     }
 
-    size_t currentToken = 2; // Start at the first potential mode string
-    bool state = Plus;       // Default state
+    std::vector<ModeChange> modeQueue;
+    bool state = true; 
+    int paramModesCount = 0;
+    
+    std::string modeString = tokens[2];
+    size_t paramIndex = 3;
 
-    while (currentToken < tokens.size()) {
-        std::string currentStr = tokens[currentToken++];
+    for (size_t i = 0; i < modeString.length(); ++i) {
+        char c = modeString[i];
 
-        // If it doesn't start with + or -, it's either a rogue parameter or malformed.
-        if (currentStr[0] != '+' && currentStr[0] != '-') {
-            this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_NEEDMOREPARAMS, client->getNickname(), "MODE", "invalid parameter"));
-            return;
+        if (c == '+') {
+            state = true;
+            continue;
+        }
+        if (c == '-') {
+            state = false;
+            continue;
         }
 
-        for (size_t i = 0; i < currentStr.length(); ++i) {
-            char c = currentStr[i];
+        if (c != 'i' && c != 't' && c != 'k' && c != 'o' && c != 'l') {
+            this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_UNKNOWNMODE, client->getNickname(), std::string(1, c), "is unknown mode char to me"));
+            continue;
+        }
 
-            if (c == '+') {
-                state = Plus;
-                continue;
-            }
-            if (c == '-') {
-                state = Minus;
-                continue;
-            }
+        bool requiresParam = false;
+        if (c == 'o' || c == 'k') requiresParam = true; 
+        if (c == 'l' && state == true) requiresParam = true;
 
-            if (c != 'i' && c != 't' && c != 'k' && c != 'o' && c != 'l') {
-                this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_UNKNOWNMODE, client->getNickname(), std::string(1, c), "is unknown mode char to me"));
-                continue;
+        std::string param = "";
+        if (requiresParam) {
+            if (paramModesCount >= 3) {
+                continue; // standard
             }
+            
+            if (paramIndex < tokens.size()) {
+                param = tokens[paramIndex++];
+                paramModesCount++;
+            } else {
+                this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_NEEDMOREPARAMS, client->getNickname(), std::string(1, c), "need more parameters"));
 
-            bool requiresParam = false;
-            if (c == 'o' || c == 'k') requiresParam = true; 
-            if (c == 'l' && state == Plus) requiresParam = true;
-
-            std::string param = "";
-            if (requiresParam) {
-                if (currentToken < tokens.size()) {
-                    param = tokens[currentToken++]; // Consume the next token as the argument
-                } else {
-                    this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_NEEDMOREPARAMS, client->getNickname(), "MODE", "need more parameters"));
-                    return;
-                }
             }
-            // next
-            // channel->applyMode(client, state, c, param);
+        }
+
+        modeQueue.push_back({state, c, param});
+    }
+
+    
+    for (size_t i = 0; i < modeQueue.size(); ++i) {
+        bool status = channel->applyMode(*this, client, modeQueue[i].state, modeQueue[i].mode, modeQueue[i].param);
+        if (!status){
+
         }
     }
+
+    // 3. Broadcast the successfully applied modes to the channel here.
 }

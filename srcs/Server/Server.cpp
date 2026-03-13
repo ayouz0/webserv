@@ -73,7 +73,6 @@ Server::~Server()
 }
 
 // @brief starts the listening on the clients and server's socket, creates a socket each time the server socket get's a request
-
 void Server::start()
 {
 

@@ -210,6 +210,8 @@ public:
     */
 
     void welcome(Server &server, unsigned long UID);
+
+    bool applyMode(Server &server, Client *client, bool state, char mode, std::string parameter);
 };
 
 #endif
