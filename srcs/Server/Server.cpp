@@ -301,6 +301,10 @@ void Server::router(const std::string &command, int clientSocket)
     {
         handleKick(clientSocket, tokens);
     }
+    else if (cmd == "MODE")
+    {
+        handleMode(clientSocket, tokens);
+    }
 }
 
 void Server::debug() const

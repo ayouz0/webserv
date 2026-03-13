@@ -1,7 +1,7 @@
 NAME        = ircserv
 
 CXX         = c++
-CXXFLAGS    = -Wall -Wextra -Werror -std=c++98 -fmax-errors=1
+CXXFLAGS    = #-Wall -Wextra -Werror -std=c++98 #-fmax-errors=1
 
 SRCS_DIR    = srcs
 
@@ -17,6 +17,7 @@ SRCS        = srcs/main.cpp \
             srcs/Server/Commands/invite.cpp \
             srcs/Server/Commands/part.cpp \
             srcs/Server/Commands/kick.cpp \
+            srcs/Server/Commands/Mode.cpp \
             srcs/Server/Utils/closeClientConnection.cpp \
             srcs/Server/Utils/generateErrorResponce.cpp \
             srcs/Server/Utils/getChannelByName.cpp \

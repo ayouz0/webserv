@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 #include "../Server/Server.hpp"
-
+#include <limits>
 size_t Channel::counter = 0;
 
 void Channel::welcome(Server &server, unsigned long UID)
@@ -40,7 +40,6 @@ void Channel::welcome(Server &server, unsigned long UID)
 void Channel::kickMultipleMembers(unsigned long UID, std::vector<std::string> &targets, Server &server, std::string comment)
 {
 
-	
 	for (size_t i = 0; i < targets.size(); i++)
 	{
 		try
@@ -61,48 +60,61 @@ void Channel::kickMultipleMembers(unsigned long UID, std::vector<std::string> &t
 		}
 		catch (const IrcException &e)
 		{
-			Client	*c = server.getClient(UID);
+			Client *c = server.getClient(UID);
 			if (c)
 				server.sendMessageToClient(c->getSocket(), server.generateErrorResponce(e.getCode(), c->getNickname(), e.getContext(), e.what()));
 		}
 	}
 }
 
+//: irc.localhost 482 user1 #mychannel :You're not channel operator
 
-//:irc.localhost 482 user1 #mychannel :You're not channel operator
-
-// we need broadcasting
-bool Channel::applyMode(Server &server, Client *client, bool state, char mode, std::string parameter){
-	if (this->isModerator(*client) == false){
-        server.sendMessageToClient(client->getSocket(), server.generateErrorResponce(ERR_CHANOPRIVSNEEDED, client->getNickname(),  '#' + this->getName(), "You're not channel operator"));
-        return false;
-	}
+// we need broadcasting 
+void Channel::applyMode(Server &server, Client *client, bool state, char mode, std::string parameter)
+{
+	if (this->isModerator(*client) == false)
+		throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
 
 	switch (mode)
 	{
 	case 'i':
 		if (state == true)
 			this->invite_only = true;
-		else if (state == false){
+		else if (state == false)
+		{
 			this->invite_only = false;
 		}
 		break;
 
 	case 't':
-		// what the fuck does that even mean
+		topic_lock = state;
 		break;
-		
+
 	case 'k':
-		// couldn't find a proper method
+		locked = state;
+		password = parameter;
 		break;
 	case 'o':
-		if (state){
-			
+		for (size_t i = 0; i < members.size(); i++)
+		{
+			ChannelMember &m = members.at(i);
+			if (m.client->getNickname() == parameter)
+			{
+				m.moderator = state;
+				break;
+			}
 		}
 		break;
-		
-	default:
-		break;
+	case 'l':
+		if (!state)
+			limit = -1;
+		else
+		{
+			char *rest = NULL;
+			errno = 0;
+			long limitToSet = std::strtol(parameter.c_str(), &rest, 10);
+			if (limitToSet >= std::numeric_limits<unsigned int>::max() || limitToSet < 0 || *rest || errno) return ;
+			limit = limitToSet;
+		}
 	}
 }
-

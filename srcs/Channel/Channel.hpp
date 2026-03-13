@@ -34,13 +34,14 @@ class Channel
     std::string password;
     static size_t counter;
     bool locked;
+    unsigned int limit;
 
     
 
 public:
     Channel(Client &creator, std::string name)
         : topic(""), topic_lock(false), name(name),
-          invite_only(false), password(""), locked(false)
+          invite_only(false), password(""), locked(false), limit(-1)
     {
         this->id = ++counter;
         members.push_back(ChannelMember(creator, true));
@@ -56,6 +57,8 @@ public:
             throw IrcException(name, MSG_BADCHANNELKEY, ERR_BADCHANNELKEY);
         if (getMemberByNickname(c.getNickname()) != NULL)
             return false; // already a member
+        
+        if (members.size() >= limit) throw IrcException(name, MSG_CHANNELISFULL, ERR_CHANNELISFULL);
 
         members.push_back(ChannelMember(c, false));
         invited.erase(c.getUID()); // in case of invitation it should be no longer valifd
@@ -211,7 +214,32 @@ public:
 
     void welcome(Server &server, unsigned long UID);
 
-    bool applyMode(Server &server, Client *client, bool state, char mode, std::string parameter);
+    void applyMode(Server &server, Client *client, bool state, char mode, std::string parameter);
+
+    std::string generateModes(){
+        // order chosen: i t l k
+        std::string result;
+
+        bool state = invite_only;
+
+        result += (invite_only ? "+" : "-");
+        result += "i";
+
+        if (topic_lock != state) result += (state ? "-" : "+"); state = !state;
+        result += "t";
+
+        if ((limit != -1) != state) result += (state ? "-" : "+"); state = !state;
+        result += "l";
+
+        if (locked != state) result += (state ? "-" : "+"); state = !state;
+
+        result += "k ";
+
+        if (limit != -1) result += limit;
+        if (locked) result += (" " + password);
+
+        return result;
+    }
 };
 
 #endif
