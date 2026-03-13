@@ -64,6 +64,7 @@ Server::Server(std::string const &port, std::string const &password) : _ServerPa
 
     std::cout << "Server started on port " << port << std::endl;
 
+    Clients[-1] = new Client(-1, BOT_NAME);
     this->start();
 }
 

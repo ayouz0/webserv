@@ -14,13 +14,12 @@ void Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens)
 
     std::string message = tokens.at(2);
     std::vector<std::string> dests = splitter(tokens.at(1), ',');
-    
+
     if (dests.empty())
         return sendMessageToClient(clientSocket, generateErrorResponce(ERR_NORECIPIENT, client->getNickname(), "PRIVMSG", "No recipient given (PRIVMSG)"));
     for (size_t i = 0; i < dests.size(); i++)
     {
         std::string dest = dests.at(i);
-        
         if (dest.empty())
             continue;
         try
@@ -37,7 +36,7 @@ void Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens)
 
                 //: user1!user1_username@127.0.0.1 JOIN #general\r\n
                 std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@" +
-                                  client->getIpAddress() + " PRIVMSG " + dest + " :" + message + "\r\n";
+                                client->getIpAddress() + " PRIVMSG " + dest + " :" + message + "\r\n";
 
                 if (ch)
                     ch->broadcast(msg, client);
@@ -49,8 +48,15 @@ void Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens)
 
                 if (to)
                 {
+                    if (to->getNickname() == BOT_NAME)
+                    {
+                        std::string botResponse = chatWithBot(message);
+                        std::string botMsg = ":" + std::string(BOT_NAME) + "!" + BOT_NAME + "@localhost PRIVMSG " + from->getNickname() + " :" + botResponse + "\r\n";
+                        sendMessageToClient(from->getSocket(), botMsg);
+                        continue;
+                    }
                     std::string msg = ":" + from->getNickname() + "!" + from->getUsername() + "@" +
-                                      from->getIpAddress() + " PRIVMSG " + to->getNickname() + " :" + message + "\r\n";
+                                    from->getIpAddress() + " PRIVMSG " + to->getNickname() + " :" + message + "\r\n";
                     sendMessageToClient(to->getSocket(), msg);
                 }
                 else

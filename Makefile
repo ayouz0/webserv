@@ -26,7 +26,8 @@ SRCS        = srcs/main.cpp \
             srcs/Server/Utils/leaveAllChannels.cpp \
             srcs/utils/tokenize.cpp \
             srcs/utils/splitter.cpp \
-            srcs/Channel/Channel.cpp
+            srcs/Channel/Channel.cpp \
+            srcs/bonus/bot.cpp
 
 OBJS        = $(SRCS:.cpp=.o)
 
