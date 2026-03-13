@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 
 #include "errors.hpp"
+#include "../bonus/bonus.hpp"
 
 #define MAX_CONNECTIONS SOMAXCONN
 /*
