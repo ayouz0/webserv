@@ -8,7 +8,6 @@ void Server::handleInvite(int clientSocket, std::vector<std::string> tokens)
         return;
     try
     {
-        
 
         if (tokens.size() < 3)
                     throw IrcException("INVITE", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);

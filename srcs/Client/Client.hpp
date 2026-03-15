@@ -22,12 +22,7 @@ class Client{
         bool    _isRegistered;
         
         
-        void _init(){ // aalahyan was here
-            _hasPassword = false;
-            _hasNickname = false;
-            _hasUsername = false;
-            _isRegistered = false;
-        }
+        void _init(); // aalahyan was here
         
         
         static unsigned long    nextUID;
@@ -35,62 +30,44 @@ class Client{
     public:
             Client();
             Client (int fd, std::string const &nickname);
-            Client(int fd, std::string nickname, std::string ipA):UID(nextUID++){
-                _init();
-                this->_socket = fd;
-                this->_nickname = nickname;
-                this->ipAdress = ipA;
-            } // aalahyan was here: i didn't want to miss with orogonal construuctor but SHIIT
+            Client(int fd, std::string nickname, std::string ipA); // aalahyan was here: i didn't want to miss with orogonal construuctor but SHIIT
             ~Client();
-            
-            std::string getIpAddress(){ // aalahyan was here
-                return ipAdress;
-            }
+            std::string getIpAddress(); // aalahyan was here
 
-            unsigned long   getUID() const {return UID;}
+            unsigned long   getUID() const;
 
-            void        appendToInboundBuffer(std::string const &data){this->inboundBuffer += data;};
-            std::string &getInboundBuffer() {return inboundBuffer;}; 
+            void        appendToInboundBuffer(std::string const &data);
+            std::string &getInboundBuffer();
 
-            void        appendToOutboundBuffer(std::string const &data){this->outboundBuffer += data;};
-            bool        hasPendingOutput() const { return !outboundBuffer.empty(); }
-            std::string &getOutboundBuffer() { return outboundBuffer; }
+            void        appendToOutboundBuffer(std::string const &data);
+            bool        hasPendingOutput() const;
+            std::string &getOutboundBuffer();
 
-            std::string getNickname() const {return _nickname;};
-            void        setNickname(std::string const &nickname) {_nickname = nickname;};
+            std::string getNickname() const;
+            void        setNickname(std::string const &nickname);
 
 
-            void        setUsername(const std::string &username) { _username = username; };
-            std::string getUsername() const { return _username; };
+            void        setUsername(const std::string &username);
+            std::string getUsername() const;
 
-            int         getSocket() const { return _socket; };
-            
-            std::string getNextCommandFromInboundBuffer(){
-                size_t pos = inboundBuffer.find("\r\n");
-                if (pos != std::string::npos) {
-                    std::string command = inboundBuffer.substr(0, pos);
-                    inboundBuffer.erase(0, pos + 2); // +2 to remove the \r\n
-                    return command;
-                }
-                return "";
-            };
+            int         getSocket() const;
 
-            void setPassState(bool state) { _hasPassword = state; }
-            bool getPassState() const { return _hasPassword; }
+            std::string getNextCommandFromInboundBuffer();
 
-            void setNickState(bool state) { _hasNickname = state; }
-            bool getNickState() const { return _hasNickname; }
+            void setPassState(bool state);
+            bool getPassState() const;
 
-            void setUserState(bool state) { _hasUsername = state; }
-            bool getUserState() const { return _hasUsername; }
+            void setNickState(bool state);
+            bool getNickState() const;
 
-            bool canRegister() const {
-                return (_hasPassword && _hasNickname && _hasUsername && !_isRegistered);
-            }
+            void setUserState(bool state);
+            bool getUserState() const;
+
+            bool canRegister() const;
 
 
-            void setRegistered(bool state) { _isRegistered = state; }
-            bool isRegistered() const { return _isRegistered; }
-};  
+            void setRegistered(bool state);
+            bool isRegistered() const;
+};
 
 #endif

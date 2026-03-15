@@ -78,7 +78,7 @@ public:
         return NULL;
     }
     /*
-         @brief add clinet to the channel
+        @brief add clinet to the channel
         @param SockerId - clinetSocker id
         @param name - channel name
         @note throws std::runtime_error
@@ -86,7 +86,7 @@ public:
     void handleJoinChannel(int socketId, std::vector<std::string> channelData);
 
     /*
-     @brief send private message to a client or a channel @param clientSocket - the sender's socket id @param tokens - the command tokens, where tokens[1] is the target and tokens[2] is the message @note throws std::runtime_error
+    @brief send private message to a client or a channel @param clientSocket - the sender's socket id @param tokens - the command tokens, where tokens[1] is the target and tokens[2] is the message @note throws std::runtime_error
     */
     void handlePrivMsg(int clientSocket, std::vector<std::string> &tokens);
 

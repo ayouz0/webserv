@@ -21,7 +21,7 @@ class Channel
         Client *client;
         bool moderator;
 
-        ChannelMember(Client &c, bool mod) : client(&c), moderator(mod) {}
+        ChannelMember(Client &c, bool mod);
     };
 
     std::vector<ChannelMember> members;
@@ -36,177 +36,43 @@ class Channel
     bool locked;
     unsigned int limit;
 
-    
 
 public:
-    Channel(Client &creator, std::string name)
-        : topic(""), topic_lock(false), name(name),
-          invite_only(false), password(""), locked(false), limit(-1)
-    {
-        this->id = ++counter;
-        members.push_back(ChannelMember(creator, true));
-    }
+    Channel(Client &creator, std::string name);
 
-    bool joinChannel(Client &c, std::string password)
-    {
-        bool is_invited = invited.find(c.getUID()) != invited.end();
-        if (invite_only && !is_invited)
-            throw IrcException(name, MSG_INVITEONLYCHAN, ERR_INVITEONLYCHAN);
+    bool joinChannel(Client &c, std::string password);
 
-        if (locked && password != this->password)
-            throw IrcException(name, MSG_BADCHANNELKEY, ERR_BADCHANNELKEY);
-        if (getMemberByNickname(c.getNickname()) != NULL)
-            return false; // already a member
-        
-        if (members.size() >= limit) throw IrcException(name, MSG_CHANNELISFULL, ERR_CHANNELISFULL);
+    bool isModerator(const Client &c) const;
 
-        members.push_back(ChannelMember(c, false));
-        invited.erase(c.getUID()); // in case of invitation it should be no longer valifd
-        return true;
-    }
+    bool setTopic(const Client &c, std::string topic);
 
-    bool isModerator(const Client &c) const
-    {
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (members[i].client->getUID() == c.getUID())
-                return members[i].moderator;
-        }
-        return false;
-    }
+    std::string getName() const;
+    const std::string &getTopic() const;
 
-    bool setTopic(const Client &c, std::string topic)
-    {
-        if (topic_lock && !isModerator(c))
-            throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
+    std::vector<Client *> getMembers() const;
 
-        this->topic = topic;
-        return true;
-    }
+    Client *getMemberByNickname(const std::string &nickname) const;
 
-    std::string getName() const
-    {
-        return name;
-    }
-    const std::string &getTopic() const
-    {
-        return topic;
-    }
+    Client *getMember(unsigned long UID);
 
-    std::vector<Client *> getMembers() const
-    {
-        std::vector<Client *> memberList;
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            memberList.push_back(members[i].client);
-        }
-        return memberList;
-    }
+    bool setPassword(const Client &c, std::string newPass);
 
-    Client *getMemberByNickname(const std::string &nickname) const
-    {
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (members[i].client->getNickname() == nickname)
-                return members[i].client;
-        }
-        return NULL;
-    }
+    void broadcast(const std::string &message, Client *exclude = NULL);
 
-    Client *getMember(unsigned long UID)
-    {
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (members[i].client->getUID() == UID)
-                return members[i].client;
-        }
-        return NULL;
-    }
+    bool isMember(int socket);
 
-    bool setPassword(const Client &c, std::string newPass)
-    {
-        if (!isModerator(c))
-            throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
+    bool isMember(unsigned long UID);
 
-        this->password = newPass;
-        this->locked = !newPass.empty();
-        return true;
-    }
+    void removeClient(unsigned long UID);
 
-    void broadcast(const std::string &message, Client *exclude = NULL)
-    {
-        std::string finalMsg = message;
-        if (finalMsg.length() < 2 || finalMsg.substr(finalMsg.length() - 2) != "\r\n")
-            finalMsg += "\r\n";
+    bool invite(const Client &c, unsigned long UID);
 
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (!exclude || exclude->getSocket() != members[i].client->getSocket())
-                members[i].client->appendToOutboundBuffer(finalMsg);
-        }
-    }
-
-    bool isMember(int socket)
-    {
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (members.at(i).client->getSocket() == socket)
-                return true;
-        }
-        return false;
-    }
-
-    bool isMember(unsigned long UID)
-    {
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (members.at(i).client->getUID() == UID)
-                return true;
-        }
-        return false;
-    }
-
-    void removeClient(unsigned long UID)
-    {
-        for (size_t i = 0; i < members.size(); i++)
-        {
-            if (members[i].client->getUID() == UID)
-            {
-                members.erase(members.begin() + i);
-                break;
-            }
-        }
-        invited.erase(UID);
-    }
-
-    bool invite(const Client &c, unsigned long UID)
-    {
-        if (invite_only && !isModerator(c))
-            throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);
-        invited.insert(UID);
-        return true;
-    }
-
-
-    void    leave(unsigned long UID, std::string message){
-        if (!isMember(UID)) throw IrcException(name, MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
-
-        Client *c = getMember(UID);
-
-        if (!c) return ;
-
-        // :<nick>!<user>@<host> PART <channel> :<Part Message>\r\n
-        broadcast(":" + c->getNickname() + "!" + c->getUsername() + "@" + c->getIpAddress() + " PART " + name + " :" + message );
-
-        removeClient(UID);
-    }
-
+    void leave(unsigned long UID, std::string message);
 
     /*
-        WARNING: this throws IRcException    
+        WARNING: this throws IRcException
     */
     void    kickMultipleMembers(unsigned long UID, std::vector<std::string> &targets, Server &server, std::string comment);
-
 
     /*
         @brief send RPL_TOPIC and users list to recent joined user
@@ -216,30 +82,7 @@ public:
 
     void applyMode(Server &server, Client *client, bool state, char mode, std::string parameter);
 
-    std::string generateModes(){
-        // order chosen: i t l k
-        std::string result;
-
-        bool state = invite_only;
-
-        result += (invite_only ? "+" : "-");
-        result += "i";
-
-        if (topic_lock != state) result += (state ? "-" : "+"); state = !state;
-        result += "t";
-
-        if ((limit != -1) != state) result += (state ? "-" : "+"); state = !state;
-        result += "l";
-
-        if (locked != state) result += (state ? "-" : "+"); state = !state;
-
-        result += "k ";
-
-        if (limit != -1) result += limit;
-        if (locked) result += (" " + password);
-
-        return result;
-    }
+    std::string generateModes();
 };
 
 #endif
