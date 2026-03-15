@@ -28,6 +28,7 @@ struct ModeChange
 void Server::handleMode(int clientSocket, std::vector<std::string> &tokens)
 {
     Client *client = findClientBySocketId(clientSocket);
+    int howManySucceed = 0;
     if (!client)
         return;
     try
@@ -82,30 +83,30 @@ void Server::handleMode(int clientSocket, std::vector<std::string> &tokens)
                 continue;
             }
 
-            bool requiresParam = false;
-            if (c == 'o' || c == 'k')
-                requiresParam = true;
-            if (c == 'l' && state == true)
-                requiresParam = true;
+            // bool requiresParam = false;
+            // if (c == 'o' || c == 'k')
+            //     requiresParam = true;
+            // if (c == 'l' && state == true)
+            //     requiresParam = true;
 
             std::string param = "";
-            if (requiresParam)
-            {
-                if (paramModesCount >= 3)
-                {
-                    continue; // standard
-                }
+            // if (requiresParam)
+            // {
+            //     if (paramModesCount >= 3)
+            //     {
+            //         continue; // standard
+            //     }
 
                 if (paramIndex < tokens.size())
                 {
                     param = tokens[paramIndex++];
                     paramModesCount++;
                 }
-                else
-                {
-                    this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_NEEDMOREPARAMS, client->getNickname(), std::string(1, c), "need more parameters"));
-                }
-            }
+            //     // else
+            //     // {
+            //     //     this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_NEEDMOREPARAMS, client->getNickname(), std::string(1, c), "need more parameters"));
+            //     // }
+            // }
 
             modeQueue.push_back(ModeChange(state, c, param));
         }
@@ -114,15 +115,17 @@ void Server::handleMode(int clientSocket, std::vector<std::string> &tokens)
             try
             {
                 channel->applyMode(*this, client, modeQueue[i].state, modeQueue[i].mode, modeQueue[i].param);
+                howManySucceed++;
             }
             catch (const IrcException &e)
             {
                 this->sendMessageToClient(clientSocket, generateErrorResponce(e.getCode(), client->getNickname(), e.getContext(), e.what()));
             }
         }
+        if (howManySucceed <= 0) return ;
         //: Nick!user@host MODE #channel +i-lk secret
         std::string message = ":" + client->getNickname() + "!" + client->getUsername() + "@" +
-                              client->getIpAddress() + "MODE " + target + modeString;
+                            client->getIpAddress() + " MODE " + target + modeString;
 
         for (size_t i = 3; i < tokens.size(); i++)
             message += " " + tokens.at(i);

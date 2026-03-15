@@ -91,21 +91,29 @@ void Channel::applyMode(Server &server, Client *client, bool state, char mode, s
 		break;
 
 	case 'k':
+		if (state && parameter.empty())
+			throw IrcException("k", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
 		locked = state;
 		password = parameter;
 		break;
 	case 'o':
+		if (parameter.empty())
+			throw IrcException("o", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
+		locked = state;
 		for (size_t i = 0; i < members.size(); i++)
 		{
 			ChannelMember &m = members.at(i);
 			if (m.client->getNickname() == parameter)
 			{
 				m.moderator = state;
-				break;
+				return;
 			}
 		}
+		throw IrcException("o", MSG_USERNOTINCHANNEL, ERR_USERNOTINCHANNEL);
 		break;
 	case 'l':
+		if (state && parameter.empty())
+			throw IrcException("l", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
 		if (!state)
 			limit = -1;
 		else
