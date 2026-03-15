@@ -4,10 +4,13 @@
 #include <string>
 #include <algorithm>
 #include <ctime>
+#include <stdio.h>
+#include <iostream>
 
 #define BOT_NAME "Bot"
 
 std::string chatWithBot(const std::string &message);
+std::string chatWithAI(const std::string &prompt);
 
 class BotUtils
 {

@@ -50,7 +50,7 @@ void Server::handlePrivMsg(int clientSocket, std::vector<std::string> &tokens)
                 {
                     if (to->getNickname() == BOT_NAME)
                     {
-                        std::string botResponse = chatWithBot(message);
+                        std::string botResponse = chatWithAI(message);
                         std::string botMsg = ":" + std::string(BOT_NAME) + "!" + BOT_NAME + "@localhost PRIVMSG " + from->getNickname() + " :" + botResponse + "\r\n";
                         sendMessageToClient(from->getSocket(), botMsg);
                         continue;
