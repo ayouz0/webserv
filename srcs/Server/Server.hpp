@@ -118,6 +118,8 @@ public:
 
     void handleMode(int clientSocket, std::vector<std::string> &tokens);
 
+    void handleQuit(int clientSocket, std::vector<std::string> &tokens);
+
     Client *findClientBySocketId(int socketId) const;
 
     void leaveAllChannels(Client &c);

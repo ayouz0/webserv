@@ -97,7 +97,7 @@ void Server::start()
             this->clientSockets[i].events = events;
         }
 
-        //the OS will nlock here untill something of those events we wanted to happen occur
+        // the OS will nlock here untill something of those events we wanted to happen occur
         int result = poll(this->clientSockets.data(), this->clientSockets.size(), -1);
         if (result <= 0)
         {
@@ -116,40 +116,40 @@ void Server::start()
                 // if the server socker recieved a request
                 // if (revents & POLLIN)
                 // {
-                    struct sockaddr_in clientAddr;                // added by aalahyan
-                    socklen_t clientAddrLen = sizeof(clientAddr); // added by aalahyan
+                struct sockaddr_in clientAddr;                // added by aalahyan
+                socklen_t clientAddrLen = sizeof(clientAddr); // added by aalahyan
 
-                    int newClientSocket = accept(this->clientSockets[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
-                    if (newClientSocket < 0)
-                    {
-                        std::cerr << "Accept failed" << std::endl;
-                        continue;
-                    }
+                int newClientSocket = accept(this->clientSockets[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
+                if (newClientSocket < 0)
+                {
+                    std::cerr << "Accept failed" << std::endl;
+                    continue;
+                }
 
-                    int nbResult = fcntl(newClientSocket, F_SETFL, O_NONBLOCK);
-                    if (nbResult == -1)
-                    {
-                        close(newClientSocket);
-                        std::cerr << "Could not set client socket to non-blocking" << std::endl;
-                        continue;
-                    }
+                int nbResult = fcntl(newClientSocket, F_SETFL, O_NONBLOCK);
+                if (nbResult == -1)
+                {
+                    close(newClientSocket);
+                    std::cerr << "Could not set client socket to non-blocking" << std::endl;
+                    continue;
+                }
 
-                    std::string ipAddress = inet_ntoa(clientAddr.sin_addr);         // you know who added it
-                    std::cout << "New connection from: " << ipAddress << std::endl; // you know who added it
+                std::string ipAddress = inet_ntoa(clientAddr.sin_addr);         // you know who added it
+                std::cout << "New connection from: " << ipAddress << std::endl; // you know who added it
 
-                    pollfd newClientPoll;
-                    newClientPoll.fd = newClientSocket;
-                    newClientPoll.events = POLLIN;
-                    newClientPoll.revents = 0;
-                    this->clientSockets.push_back(newClientPoll);
+                pollfd newClientPoll;
+                newClientPoll.fd = newClientSocket;
+                newClientPoll.events = POLLIN;
+                newClientPoll.revents = 0;
+                this->clientSockets.push_back(newClientPoll);
 
-                    Client *newClient = new Client(newClientSocket, "", ipAddress);
-                    this->Clients[newClientSocket] = newClient;
+                Client *newClient = new Client(newClientSocket, "", ipAddress);
+                this->Clients[newClientSocket] = newClient;
                 // }
             }
             else
             {
-                if (revents & (POLLERR | POLLHUP | POLLNVAL)) //if there any poll error of clinet disconnection or invalid request
+                if (revents & (POLLERR | POLLHUP | POLLNVAL)) // if there any poll error of clinet disconnection or invalid request
                 {
                     this->closeClientConnection(currentFd);
                     i--;
@@ -186,10 +186,19 @@ void Server::start()
                         continue;
                     }
                     it->second->appendToInboundBuffer(std::string(buffer));
-                    std::string cmd;
-                    while (!(cmd = it->second->getNextCommandFromInboundBuffer()).empty())
+
+                    while (true)
                     {
+                        std::map<int, Client *>::iterator cur = this->Clients.find(currentFd);
+                        if (cur == this->Clients.end())
+                            break;
+
+                        std::string cmd = cur->second->getNextCommandFromInboundBuffer();
+                        if (cmd.empty())
+                            break;
+
                         this->router(cmd, currentFd);
+
                     }
                 }
 
@@ -306,6 +315,16 @@ void Server::router(const std::string &command, int clientSocket)
     {
         handleMode(clientSocket, tokens);
     }
+    else if (cmd == "QUIT")
+    {
+        handleQuit(clientSocket, tokens);
+    }
+    else{
+        // :<server_name> 421 <nickname> <command> :Unknown command
+        Client *c = findClientBySocketId(clientSocket);
+        if (!c) return ;
+        sendMessageToClient(clientSocket, ":irc 421 " + c->getNickname() + " " + cmd + " :Unknown command");
+    }
 }
 
 void Server::debug() const
@@ -390,7 +409,8 @@ void Server::debug() const
 }
 
 // @brief sends a welcome burst to a client
-void    Server::welcomeBurst(int clientSocket){
+void Server::welcomeBurst(int clientSocket)
+{
     Client *client = this->Clients[clientSocket];
 
     std::string msgs;
@@ -398,8 +418,7 @@ void    Server::welcomeBurst(int clientSocket){
     msgs += generateErrorResponce(1, client->getNickname(), "", "Welcome to the Internet Relay Network " + client->getNickname()) + "\r\n";
     msgs += generateErrorResponce(2, client->getNickname(), "", "Your host is " + this->serverName + ", running version 1.0") + "\r\n";
     msgs += generateErrorResponce(3, client->getNickname(), "", "This server was created today") + "\r\n";
-    msgs += generateErrorResponce(4, client->getNickname(), this->serverName , " 1.0");
+    msgs += generateErrorResponce(4, client->getNickname(), this->serverName, " 1.0");
 
     this->sendMessageToClient(clientSocket, msgs);
-    
 }
