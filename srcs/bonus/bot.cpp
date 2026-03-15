@@ -26,7 +26,6 @@ std::string chatWithAI(const std::string &prompt)
     }
 
     while (fgets(buffer, 128, curlFile) != NULL) {
-        std::cout << "Reading..." << std::endl;
         result += buffer;
     }
     pclose(curlFile);
