@@ -187,7 +187,7 @@ std::string Channel::generateModes()
 	state = !state;
 	result += "t";
 
-	if ((limit != -1) != state)
+	if ((limit != (unsigned int)-1) != state)
 		result += (state ? "-" : "+");
 	state = !state;
 	result += "l";
@@ -198,7 +198,7 @@ std::string Channel::generateModes()
 
 	result += "k ";
 
-	if (limit != -1)
+	if (limit != (unsigned int)-1)
 		result += limit;
 	if (locked)
 		result += (" " + password);
@@ -273,7 +273,7 @@ void Channel::kickMultipleMembers(unsigned long UID, std::vector<std::string> &t
 //: irc.localhost 482 user1 #mychannel :You're not channel operator
 
 // we need broadcasting
-void Channel::applyMode(Server &server, Client *client, bool state, char mode, std::string parameter)
+void Channel::applyMode(Client *client, bool state, char mode, std::string parameter)
 {
 	if (this->isModerator(*client) == false)
 		throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED);

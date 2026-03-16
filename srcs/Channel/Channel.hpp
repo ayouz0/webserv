@@ -80,7 +80,7 @@ public:
 
     void welcome(Server &server, unsigned long UID);
 
-    void applyMode(Server &server, Client *client, bool state, char mode, std::string parameter);
+    void applyMode(Client *client, bool state, char mode, std::string parameter);
 
     std::string generateModes();
 };

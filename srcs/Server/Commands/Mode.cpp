@@ -114,7 +114,7 @@ void Server::handleMode(int clientSocket, std::vector<std::string> &tokens)
         {
             try
             {
-                channel->applyMode(*this, client, modeQueue[i].state, modeQueue[i].mode, modeQueue[i].param);
+                channel->applyMode( client, modeQueue[i].state, modeQueue[i].mode, modeQueue[i].param);
                 howManySucceed++;
             }
             catch (const IrcException &e)
