@@ -89,5 +89,7 @@ nc -C 127.0.0.1 <port>
 
 **AI Usage**
 
-* AI was used during this project to write this readme file*.
+* AI was used during this project to achieve two objectives*.
+1. To help in explanation of irc protocols, network programming, sockets and c++ knewledge
+2. To help in genertaing some static content used in this project like data set of bot (bonus part), and refining the writing of this README file
 
