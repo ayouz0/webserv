@@ -7,7 +7,6 @@
 
 Server::Server(std::string const &port, std::string const &password) : _ServerPassword(password), serverName("irc")
 {
-
     this->serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (this->serverSocket == -1)
     {
@@ -52,7 +51,7 @@ Server::Server(std::string const &port, std::string const &password) : _ServerPa
     }
 
     if (listen(this->serverSocket, MAX_CONNECTIONS) < 0)
-    { // creates the queue
+    {
         close(this->serverSocket);
         throw std::runtime_error("Listen failed");
     }
@@ -113,11 +112,8 @@ void Server::start()
 
             if (currentFd == this->serverSocket && (revents & POLLIN))
             {
-                // if the server socker recieved a request
-                // if (revents & POLLIN)
-                // {
-                struct sockaddr_in clientAddr;                // added by aalahyan
-                socklen_t clientAddrLen = sizeof(clientAddr); // added by aalahyan
+                struct sockaddr_in clientAddr;
+                socklen_t clientAddrLen = sizeof(clientAddr);
 
                 int newClientSocket = accept(this->clientSockets[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
                 if (newClientSocket < 0)
@@ -177,7 +173,6 @@ void Server::start()
                         continue;
                     }
                     buffer[bytesRead] = '\0';
-                    std::cout << "Received data from client " << currentFd << ": " << buffer << std::endl; // to be removed
                     std::map<int, Client *>::iterator it = this->Clients.find(currentFd);
                     if (it == this->Clients.end())
                     {
@@ -249,19 +244,11 @@ void Server::router(const std::string &command, int clientSocket)
     if (tokens.empty())
         return;
 
-    for (size_t i = 0; i < tokens.size(); i++)
-    {
-        std::cout << "Token " << i << ": " << tokens[i] << std::endl;
-    }
-
     std::transform(tokens.at(0).begin(), tokens.at(0).end(), tokens.at(0).begin(), (int (*)(int))std::toupper);
 
     Client *client = Clients[clientSocket];
 
     std::string cmd = tokens.at(0);
-
-    if (cmd == "DEBUG")
-        return debug(); // this is for testing purposes only, to be removed later
 
     if (cmd == "PASS")
     {
@@ -319,6 +306,10 @@ void Server::router(const std::string &command, int clientSocket)
     {
         handleQuit(clientSocket, tokens);
     }
+    else if (cmd == "PONG")
+    {
+        sendMessageToClient(clientSocket, "PING irc");
+    }
     else{
         // :<server_name> 421 <nickname> <command> :Unknown command
         Client *c = findClientBySocketId(clientSocket);
@@ -327,86 +318,6 @@ void Server::router(const std::string &command, int clientSocket)
     }
 }
 
-void Server::debug() const
-{
-
-    const char *reset = "\033[0m";
-    const char *title = "\033[1;36m";
-    const char *header = "\033[1;34m";
-    const char *row = "\033[0;32m";
-    const char *muted = "\033[0;90m";
-
-    std::cout << title << "\n=== DEBUG STATE ===\n"
-              << reset;
-
-    std::cout << header << "\nClients\n"
-              << reset;
-    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n"
-              << reset;
-    std::cout << muted << "| Socket   | Nickname             | Username             | IP               |\n"
-              << reset;
-    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n"
-              << reset;
-
-    if (Clients.empty())
-    {
-        std::cout << muted << "| (none)   |                      |                      |                  |\n"
-                  << reset;
-    }
-    else
-    {
-        for (std::map<int, Client *>::const_iterator it = Clients.begin(); it != Clients.end(); ++it)
-        {
-            std::cout << row << "| " << std::left << std::setw(8) << it->first
-                      << " | " << std::left << std::setw(20) << it->second->getNickname()
-                      << " | " << std::left << std::setw(20) << it->second->getUsername()
-                      << " | " << std::left << std::setw(16) << it->second->getIpAddress()
-                      << " |\n"
-                      << reset;
-        }
-    }
-    std::cout << muted << "+----------+----------------------+----------------------+------------------+\n"
-              << reset;
-
-    std::cout << header << "\nChannels\n"
-              << reset;
-    std::cout << muted << "+----------------------+------------------------------------------+\n"
-              << reset;
-    std::cout << muted << "| Name                 | Members                                  |\n"
-              << reset;
-    std::cout << muted << "+----------------------+------------------------------------------+\n"
-              << reset;
-
-    if (channels.empty())
-    {
-        std::cout << muted << "| (none)               |                                          |\n"
-                  << reset;
-    }
-    else
-    {
-        for (size_t i = 0; i < channels.size(); i++)
-        {
-            std::vector<Client *> members = channels[i].getMembers();
-            std::string memberList;
-            for (size_t j = 0; j < members.size(); j++)
-            {
-                if (j != 0)
-                    memberList += ", ";
-                memberList += members[j]->getNickname();
-            }
-            if (memberList.empty())
-                memberList = "(none)";
-
-            std::cout << row << "| " << std::left << std::setw(20) << channels[i].getName()
-                      << " | " << std::left << std::setw(40) << memberList
-                      << " |\n"
-                      << reset;
-        }
-    }
-
-    std::cout << muted << "+----------------------+------------------------------------------+\n"
-              << reset;
-}
 
 // @brief sends a welcome burst to a client
 void Server::welcomeBurst(int clientSocket)

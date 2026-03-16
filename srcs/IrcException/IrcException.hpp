@@ -24,7 +24,6 @@ class IrcException : public   std::exception {
         }
 
         virtual ~IrcException() throw() {}
-
 };
 
 
