@@ -319,6 +319,10 @@ void Server::router(const std::string &command, int clientSocket)
     {
         handleQuit(clientSocket, tokens);
     }
+    else if (cmd == "PONG")
+    {
+        sendMessageToClient(clientSocket, "PING irc");
+    }
     else{
         // :<server_name> 421 <nickname> <command> :Unknown command
         Client *c = findClientBySocketId(clientSocket);
