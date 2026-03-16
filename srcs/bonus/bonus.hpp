@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <ctime>
 
-#define BOT_NAME "Bot"
+#define BOT_NAME "bot"
 
 std::string chatWithBot(const std::string &message);
 
