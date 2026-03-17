@@ -83,31 +83,12 @@ void Server::handleMode(int clientSocket, std::vector<std::string> &tokens)
                 continue;
             }
 
-            // bool requiresParam = false;
-            // if (c == 'o' || c == 'k')
-            //     requiresParam = true;
-            // if (c == 'l' && state == true)
-            //     requiresParam = true;
-
             std::string param = "";
-            // if (requiresParam)
-            // {
-            //     if (paramModesCount >= 3)
-            //     {
-            //         continue; // standard
-            //     }
-
                 if (paramIndex < tokens.size())
                 {
                     param = tokens[paramIndex++];
                     paramModesCount++;
                 }
-            //     // else
-            //     // {
-            //     //     this->sendMessageToClient(clientSocket, generateErrorResponce(ERR_NEEDMOREPARAMS, client->getNickname(), std::string(1, c), "need more parameters"));
-            //     // }
-            // }
-
             modeQueue.push_back(ModeChange(state, c, param));
         }
         for (size_t i = 0; i < modeQueue.size(); ++i)

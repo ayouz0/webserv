@@ -17,7 +17,6 @@ void    Server::leaveAllChannels(Client &c){
         if (ch.isMember(c.getUID()))
         {
             std::ostringstream  oss;
-            // oss << ":" << c.getNickname() << "!" << c.getUsername() << "@" << c.getIpAddress() << " PART :" << ch.getName();
             ch.broadcast(":" + c.getNickname() + "!" + c.getUsername() + "@" + c.getIpAddress() + " PART " + ch.getName());
             ch.removeClient(c.getUID());
         }

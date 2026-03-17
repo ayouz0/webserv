@@ -130,8 +130,8 @@ void Server::start()
                     continue;
                 }
 
-                std::string ipAddress = inet_ntoa(clientAddr.sin_addr);         // you know who added it
-                std::cout << "New connection from: " << ipAddress << std::endl; // you know who added it
+                std::string ipAddress = inet_ntoa(clientAddr.sin_addr); 
+                std::cout << "New connection from: " << ipAddress << std::endl;
 
                 pollfd newClientPoll;
                 newClientPoll.fd = newClientSocket;

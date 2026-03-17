@@ -45,17 +45,3 @@ std::vector<std::string> Tokenize(const std::string &message)
     }
     return tokens;
 }
-
-
-
-// int main(){
-//     std::string s("hhdh :hdhdh: dhdh:");
-
-//     std::vector<std::string> toks = Tokenize(s);
-
-//     for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end(); it++)
-//     {
-//         std::cout << "tok: " << *it << "\n";
-//     }
-
-// }

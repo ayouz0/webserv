@@ -8,7 +8,6 @@ int main(int ac, const char **av){
         return 1;
     }
     try{
-        srand(time(NULL));
         Server server(av[1], av[2]);
     }
     catch (std::exception &e){
