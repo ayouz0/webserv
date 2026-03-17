@@ -175,35 +175,35 @@ void Channel::leave(unsigned long UID, std::string message)
 std::string Channel::generateModes()
 {
 	// order chosen: i t l k
-	std::string result;
+	std::ostringstream result;
 
 	bool state = invite_only;
 
-	result += (invite_only ? "+" : "-");
-	result += "i";
+	result << (invite_only ? "+" : "-");
+	result << "i";
 
 	if (topic_lock != state)
-		result += (state ? "-" : "+");
+		result << (state ? "-" : "+");
 	state = !state;
-	result += "t";
+	result << "t";
 
 	if ((limit != (unsigned int)-1) != state)
-		result += (state ? "-" : "+");
+		result << (state ? "-" : "+");
 	state = !state;
-	result += "l";
+	result << "l";
 
 	if (locked != state)
-		result += (state ? "-" : "+");
+		result << (state ? "-" : "+");
 	state = !state;
 
-	result += "k ";
+	result << "k ";
 
 	if (limit != (unsigned int)-1)
-		result += limit;
+		result << limit << " ";
 	if (locked)
-		result += (" " + password);
+		result << (" " + password);
 
-	return result;
+	return result.str();
 }
 
 void Channel::welcome(Server &server, unsigned long UID)
@@ -252,10 +252,10 @@ void Channel::kickMultipleMembers(unsigned long UID, std::vector<std::string> &t
 				throw IrcException(name, MSG_NOTONCHANNEL, ERR_NOTONCHANNEL); // executor not on channel
 			if (!isModerator(*executor))
 				throw IrcException(name, MSG_CHANOPRIVSNEEDED, ERR_CHANOPRIVSNEEDED); // executor is in channel but not moderator
-			Client *target = server.getClientByNickname(targets.at(i));
+			Client *target = getMember(UID);
 			if (!target)
 				throw IrcException(targets.at(i) + " " + name, MSG_USERNOTINCHANNEL, ERR_USERNOTINCHANNEL);
-			// :<executor_nick>!<executor_user>@<executor_host> KICK <channel> <target_nick> :comment or nick
+			// :<executor_nick>!<executor_user>@<executor_host> KICK <channel> <target_nick > :comment or nick
 			std::string response = ":" + executor->getNickname() + "!" + executor->getUsername() +
 								"@" + executor->getIpAddress() + " KICK " + name + " " + target->getNickname() + " :" + comment + "\r\n";
 			broadcast(response);
@@ -302,7 +302,6 @@ void Channel::applyMode(Client *client, bool state, char mode, std::string param
 	case 'o':
 		if (parameter.empty())
 			throw IrcException("o", MSG_NEEDMOREPARAMS, ERR_NEEDMOREPARAMS);
-		locked = state;
 		for (size_t i = 0; i < members.size(); i++)
 		{
 			ChannelMember &m = members.at(i);

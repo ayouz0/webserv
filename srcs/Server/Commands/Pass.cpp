@@ -24,7 +24,7 @@ void    Server::handlePassCommand(const std::vector<std::string> &tokens, int cl
     std::string password = tokens[1];
     if ( password != this->_ServerPassword ){
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(462, nickName, "PASS", "Password missmatch");
+        std::string errorMsg = this->generateErrorResponce(ERR_PASSWDMISMATCH, nickName, "PASS", MSG_PASSWDMISMATCH);
 
         this->sendMessageToClient(clientSocket, errorMsg);
         return;

@@ -269,7 +269,7 @@ void Server::router(const std::string &command, int clientSocket)
     if (client->isRegistered() == false)
     {
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-        std::string errorMsg = this->generateErrorResponce(431, nickName, tokens[0], "You have not registered yet");
+        std::string errorMsg = this->generateErrorResponce(ERR_NOTREGISTERED, nickName, tokens[0], "You have not registered yet");
         this->sendMessageToClient(clientSocket, errorMsg);
         return;
     }

@@ -21,6 +21,7 @@ void        Server::handleUserCommand(const std::vector<std::string> &tokens, in
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(431, nickName, "USER", "Client did not set the password");
         this->sendMessageToClient(clientSocket, errorMsg);
+        return;
     }
 
 
@@ -28,6 +29,7 @@ void        Server::handleUserCommand(const std::vector<std::string> &tokens, in
         std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
         std::string errorMsg = this->generateErrorResponce(462, nickName, "USER", "Client already registered");
         this->sendMessageToClient(clientSocket, errorMsg);
+        return;
     }
 
     if ( tokens.size() < 5 ){

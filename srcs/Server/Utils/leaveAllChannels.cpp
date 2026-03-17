@@ -18,7 +18,7 @@ void    Server::leaveAllChannels(Client &c){
         {
             std::ostringstream  oss;
             // oss << ":" << c.getNickname() << "!" << c.getUsername() << "@" << c.getIpAddress() << " PART :" << ch.getName();
-            ch.broadcast(":" + c.getNickname() + "!" + c.getUsername() + "@" + c.getIpAddress() + " PART :" + ch.getName());
+            ch.broadcast(":" + c.getNickname() + "!" + c.getUsername() + "@" + c.getIpAddress() + " PART " + ch.getName());
             ch.removeClient(c.getUID());
         }
     }

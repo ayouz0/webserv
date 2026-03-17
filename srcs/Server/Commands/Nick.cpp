@@ -46,7 +46,7 @@ void    Server::handleNickCommand(const std::vector<std::string> &tokens, int cl
     for ( std::map<int, Client*>::iterator it = this->Clients.begin(); it != Clients.end(); it ++ ){
         if ( (it->second->getNickname() == nickname) && (it->second->getSocket() != clientSocket)){ // duplicate
             std::string nickName = client->getNickname().empty() ? "*" : client->getNickname();
-            std::string errorMsg = this->generateErrorResponce(436, nickName, "NICK", "Nickname already in use");
+            std::string errorMsg = this->generateErrorResponce(ERR_NICKNAMEINUSE, nickName, "NICK", MSG_NICKNAMEINUSE);
             this->sendMessageToClient(clientSocket, errorMsg);
             return;
         }

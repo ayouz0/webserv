@@ -16,10 +16,10 @@ void Server::handleInvite(int clientSocket, std::vector<std::string> tokens)
                     throw IrcException(tokens.at(1), MSG_NOSUCHNICK, ERR_NOSUCHNICK);
         Channel *channel = getChannelByName(tokens.at(2));
         if (!channel || !channel->isMember(client->getUID()))
-                    throw IrcException(tokens.at(2), MSG_NOSUCHCHANNEL, ERR_NOSUCHCHANNEL);
+                    throw IrcException(tokens.at(2), MSG_NOTONCHANNEL, ERR_NOTONCHANNEL);
         if (channel->isMember(invitedClient->getUID()))
                     throw IrcException(invitedClient->getNickname(), MSG_USERONCHANNEL, ERR_USERONCHANNEL);
-        channel->invite(*client, invitedClient->getUID()); //ATTENTION this will throw ERR_CHANOPRIVSNEEDED  exception
+        channel->invite(*client, invitedClient->getUID());
 
         std::ostringstream oss;
         oss << ":" << serverName << " " << RPL_INVITING << " " << client->getNickname() << " " << invitedClient->getNickname() << " " << channel->getName();
