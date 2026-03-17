@@ -5,6 +5,8 @@ CXXFLAGS    = -Wall -Wextra -Werror -std=c++98 #-fmax-errors=1
 
 SRCS_DIR    = srcs
 
+HEADERS     = srcs/Client/Client.hpp srcs/Server/Server.hpp srcs/Server/errors.hpp srcs/Channel/Channel.hpp srcs/bonus/bonus.hpp
+
 SRCS        = srcs/main.cpp \
             srcs/Client/Client.cpp \
             srcs/Server/Server.cpp \
@@ -28,16 +30,19 @@ SRCS        = srcs/main.cpp \
             srcs/utils/tokenize.cpp \
             srcs/utils/splitter.cpp \
             srcs/Channel/Channel.cpp \
-            srcs/bonus/bot.cpp
 
-OBJS        = $(SRCS:.cpp=.o)
+BONUS_SRCS  = srcs/bonus/bot.cpp
 
-all: $(NAME)
+OBJS        = $(SRCS:.cpp=.o) $(BONUS_SRCS:.cpp=.o)
+
+
+
+all bonus: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 
-%.o: %.cpp
+%.o: %.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
